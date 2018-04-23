@@ -1,0 +1,43 @@
+---
+
+- set_fact:
+    threescale_cicd_api_method_definition:
+      system_name: '{{ threescale_cicd_tmp_operation.key }}'
+      friendly_name: '{{ threescale_cicd_tmp_operation.value.friendly_name|default(threescale_cicd_tmp_operation.key) }}'
+      description: '{{ threescale_cicd_tmp_operation.value.description|default('''') }}'
+      unit: 'hits'
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ "access_token=" ~ threescale_cicd_access_token|urlencode }}'
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ threescale_cicd_tmp_body_update_method ~ "&" ~ (threescale_cicd_tmp_param.key|urlencode) ~ "=" ~ (threescale_cicd_tmp_param.value|urlencode) }}'
+  with_dict: '{{ threescale_cicd_api_method_definition }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_param
+
+- name: Update the method
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/metrics/{{ threescale_cicd_metric_id }}/methods/{{ (threescale_cicd_existing_metrics_details|selectattr('system_name', 'equalto', threescale_cicd_tmp_operation.key)|first).id }}.json
+    validate_certs: no
+    method: PATCH
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+  when: 'threescale_cicd_tmp_operation.key in threescale_cicd_existing_metrics'
+
+- name: Create the method
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/metrics/{{ threescale_cicd_metric_id }}/methods.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
+  when: 'threescale_cicd_tmp_operation.key not in threescale_cicd_existing_metrics'
+
+- set_fact:
+    threescale_cicd_existing_metrics: '{{ threescale_cicd_existing_metrics|union([ threescale_cicd_tmp_operation.key ]) }}'
+    threescale_cicd_existing_metrics_details: '{{ threescale_cicd_existing_metrics_details|union([ { "system_name": threescale_cicd_tmp_operation.key, "id": threescale_cicd_tmpresponse.json|json_query("method.id") } ]) }}'
+  when: 'threescale_cicd_tmp_operation.key not in threescale_cicd_existing_metrics'

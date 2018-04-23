@@ -1,0 +1,14 @@
+galaxy_info:
+  author: Nicolas Massé
+  description: Enables CI/CD with 3scale API Management Platform
+  company: Red Hat
+  license: MIT
+  min_ansible_version: 2.4
+  galaxy_tags:
+  - 3scale
+  - threescale
+  - 3scale-amp
+  - api-management
+  - continuous-deployment
+
+dependencies: []

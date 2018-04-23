@@ -1,0 +1,143 @@
+---
+- name: Parse the OpenAPI file (YAML format)
+  set_fact:
+    threescale_cicd_openapi_file_content: '{{ lookup(''file'', threescale_cicd_openapi_file) |from_yaml }}'
+  when: "threescale_cicd_openapi_file_format|upper == 'YAML'"
+
+- name: Parse the OpenAPI file (JSON format)
+  set_fact:
+    threescale_cicd_openapi_file_content: '{{ lookup(''file'', threescale_cicd_openapi_file) |from_json }}'
+  when: "threescale_cicd_openapi_file_format|upper == 'JSON'"
+
+- name: Extract the OpenAPI format version
+  set_fact:
+    threescale_cicd_openapi_file_version: '{{ threescale_cicd_openapi_file_content|json_query(''swagger'') }}'
+
+- name: Check the OpenAPI format version
+  assert:
+    that:
+    - "threescale_cicd_openapi_file_version == '2.0'"
+    msg: "Currently only the OpenAPI/Swagger 2.0 is handled. If needed, fill an issue or submit a pull request!"
+
+# TODO rewrite this in a more "Ansible compatible" way
+- name: Extract API Methods
+  set_fact:
+    threescale_cicd_api_name: '{{ threescale_cicd_openapi_file_content.info.title|default("API") }}'
+    threescale_cicd_api_basepath: '{{ threescale_cicd_openapi_file_content.basePath|default("") }}'
+    threescale_cicd_api_operations: >-
+        {% set operations = {} -%}
+        {% if 'paths' in threescale_cicd_openapi_file_content -%}
+          {% for path, verbs in threescale_cicd_openapi_file_content['paths'].items() -%}
+            {% if path.startswith('/') -%}
+              {% for verb, method_description in verbs.items() -%}
+                {% if verb != '$ref' and verb != 'parameters' -%}
+                  {% if 'operationId' in method_description -%}
+                    {% set operation_id = method_description['operationId'] -%}
+                  {% else -%}
+                    {% set operation_id = verb.upper() + path -%}
+                  {% endif -%}
+                  {% set operation_id = operation_id|regex_replace('[^0-9a-zA-Z_]+', '_') -%}
+                  {% set operation = { operation_id: { 'path': path, 'verb': verb } } -%}
+                  {% if 'summary' in method_description -%}
+                    {% if operation[operation_id].update({ 'friendly_name': method_description.summary }) -%}{% endif -%}
+                  {% endif -%}
+                  {% if 'description' in method_description -%}
+                    {% if operation[operation_id].update({ 'description': method_description.description }) -%}{% endif -%}
+                  {% endif -%}
+                  {% if operations.update(operation) -%}{% endif -%}
+                {% endif -%}
+              {% endfor -%}
+            {% endif -%}
+          {% endfor -%}
+        {% endif -%}
+        {{ operations }}
+
+- name: Extract the wanted system_name from OpenAPI
+  set_fact:
+    threescale_cicd_api_system_name: '{{ threescale_cicd_openapi_file_content.info[''x-threescale-system-name''] }}'
+  when: 'threescale_cicd_api_system_name is not defined and ''x-threescale-system-name'' in threescale_cicd_openapi_file_content.info'
+
+- name: Generate a system_name from the API title
+  set_fact:
+    threescale_cicd_api_system_name: '{{ threescale_cicd_openapi_file_content.info[''title'']|default(''api'')|regex_replace(''[^a-zA-Z0-9_]+'', ''_'') }}'
+  when: 'threescale_cicd_api_system_name is not defined'
+
+- name: Extract the security definitions and requirements from OpenAPI
+  set_fact:
+    threescale_cicd_api_security_requirements: '{{ threescale_cicd_openapi_file_content.security|default({}) }}'
+    threescale_cicd_api_security_definitions: '{{ threescale_cicd_openapi_file_content.securityDefinitions|default({}) }}'
+
+- name: Make sure there is one and exactly one security requirement
+  assert:
+    that:
+    - 'threescale_cicd_api_security_requirements|length == 1'
+    msg: 'You have {{ threescale_cicd_api_security_requirements|length }} global security requirements. There must be one and only one security requirement.'
+
+- name: Find the security requirement to use
+  set_fact:
+    threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_requirements.keys()[0] }}'
+
+- name: Make sure the requested security definition exists
+  assert:
+    that:
+    - 'threescale_cicd_api_security_scheme in threescale_cicd_api_security_definitions'
+
+- name: Find the security definition to use
+  set_fact:
+    threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme] }}'
+
+- name: Make sure the security scheme is consistent with 3scale
+  assert:
+    that:
+    - 'threescale_cicd_api_security_scheme.type == ''apiKey'' or (threescale_cicd_api_security_scheme.type == ''oauth2'' and threescale_cicd_sso_issuer_endpoint is defined)'
+
+- name: Find the correct backend_version to use
+  set_fact:
+    threescale_cicd_api_backend_version: '1'
+  when: 'threescale_cicd_api_security_scheme.type == ''apiKey'''
+
+- name: Find the correct backend_version to use
+  set_fact:
+    threescale_cicd_api_backend_version: 'oauth'
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+
+- name: Extract the backend hostname from OpenAPI
+  set_fact:
+    threescale_cicd_api_backend_hostname: '{{ threescale_cicd_openapi_file_content.host }}'
+  when: 'threescale_cicd_api_backend_hostname is not defined and ''host'' in threescale_cicd_openapi_file_content'
+
+- name: Extract the backend scheme from OpenAPI
+  set_fact:
+    threescale_cicd_api_backend_scheme: '{{ threescale_cicd_openapi_file_content.schemes|default(["http"])|first }}'
+  when: 'threescale_cicd_api_backend_scheme is not defined'
+
+- assert:
+    that:
+    - 'threescale_cicd_api_backend_scheme is defined'
+    - 'threescale_cicd_api_backend_hostname is defined'
+    msg: 'The backend hostname and scheme must either be in the swagger or declared as extra variables (threescale_cicd_api_backend_scheme / threescale_cicd_api_backend_hostname)'
+
+
+- name: Find the smoke-test flagged operation
+  set_fact:
+    threescale_cicd_openapi_smoketest_operation: '{{ threescale_cicd_openapi_file_content|json_query(''paths.*.get[? "x-threescale-smoketests-operation" ].operationId|[0]'') }}'
+  when: 'threescale_cicd_openapi_smoketest_operation is not defined'
+
+- assert:
+    that:
+    # Operation must exists
+    - 'threescale_cicd_openapi_smoketest_operation in threescale_cicd_api_operations'
+    # Must be a GET
+    - 'threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].verb == ''get'''
+    # Must NOT have a placeholder in the path
+    - 'threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].path.find("{") == -1'
+    msg: "The smoketest operation {{ threescale_cicd_openapi_smoketest_operation }} must be a GET and cannot have a placeholder in its path."
+  when: 'threescale_cicd_openapi_smoketest_operation is defined and threescale_cicd_openapi_smoketest_operation|length > 0'
+
+- set_fact:
+    threescale_cicd_openapi_smoketest_operation: '{{ threescale_cicd_openapi_smoketest_operation|regex_replace(''[^0-9a-zA-Z_]+'', ''_'') }}'
+  when: 'threescale_cicd_openapi_smoketest_operation is defined and threescale_cicd_openapi_smoketest_operation|length > 0'
+
+- set_fact:
+    threescale_cicd_openapi_smoketest_path: '{{ threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].path }}'
+  when: 'threescale_cicd_openapi_smoketest_operation is defined and threescale_cicd_openapi_smoketest_operation|length > 0'

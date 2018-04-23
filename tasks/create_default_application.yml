@@ -1,0 +1,80 @@
+---
+
+- name: Get the default (first) account
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/accounts.json?access_token={{ threescale_cicd_access_token|urlencode }}&state=approved&page=1&per_page=1
+    validate_certs: no
+  register: threescale_cicd_tmp_allaccounts
+  when: 'threescale_cicd_default_account_id is not defined'
+
+- set_fact:
+    threescale_cicd_default_account_id: '{{ threescale_cicd_tmp_allaccounts.json.accounts[0].account.id }}'
+  when: 'threescale_cicd_default_account_id is not defined'
+
+- name: Pick the first given application plan if no default application plan is given
+  set_fact:
+    threescale_cicd_default_application_plan: '{{ (threescale_cicd_application_plans|first).system_name }}'
+  when: 'threescale_cicd_default_application_plan is not defined and threescale_cicd_application_plans is defined and threescale_cicd_application_plans|length > 0'
+
+- name: Find the application plan id
+  set_fact:
+    threescale_cicd_default_application_plan_id: '{{ (threescale_cicd_existing_application_plans_details|selectattr("system_name", "equalto", threescale_cicd_default_application_plan)|first).id }}'
+  when: 'threescale_cicd_default_application_plan is defined'
+
+- name: Compute the appid for the default application
+  set_fact:
+    # The default appid is a SHA1 hash of the application name, api name and salted with the 3scale access token so that it cannot be guessed
+    threescale_cicd_default_application_appid: '{{ (threescale_cicd_default_application_name ~ threescale_cicd_api_system_name ~ threescale_cicd_access_token)|hash(''sha1'') }}'
+  when: 'threescale_cicd_default_application_appid is not defined'
+
+- set_fact:
+    threescale_cicd_tmp_search_criteria: 'app_id'
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+
+- set_fact:
+    threescale_cicd_tmp_search_criteria: 'user_key'
+  when: 'threescale_cicd_api_security_scheme.type == ''apiKey'''
+
+- name: Check if the default application exists
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/applications/find.json?access_token={{ threescale_cicd_access_token|urlencode }}&{{ threescale_cicd_tmp_search_criteria }}={{ threescale_cicd_default_application_appid|urlencode }}'
+    validate_certs: no
+    method: GET
+    status_code: 200,404
+  register: threescale_cicd_tmpresponse
+  when: 'threescale_cicd_default_application_id is not defined and threescale_cicd_default_application_appid is defined'
+
+- set_fact:
+    threescale_cicd_default_application_id: '{{ threescale_cicd_tmpresponse.json.application.id }}'
+  when: 'threescale_cicd_default_application_id is not defined and threescale_cicd_default_application_appid is defined and threescale_cicd_tmpresponse.status == 200'
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ "access_token=" ~ (threescale_cicd_access_token|urlencode) ~ "&plan_id=" ~ threescale_cicd_default_application_plan_id ~ "&name=" ~ (threescale_cicd_default_application_name|urlencode) ~ "&description=" ~ (threescale_cicd_default_application_description|urlencode) ~ "&" ~ threescale_cicd_tmp_search_criteria ~ "=" ~ (threescale_cicd_default_application_appid|urlencode) }}'
+
+- name: Create the application
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/accounts/{{ threescale_cicd_default_account_id }}/applications.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  when: 'threescale_cicd_default_application_id is not defined'
+
+- set_fact:
+    threescale_cicd_default_application_details: '{{ threescale_cicd_tmpresponse.json.application }}'
+  when: 'threescale_cicd_default_application_id is not defined'
+
+- name: Update the application
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/accounts/{{ threescale_cicd_default_account_id }}/applications/{{ threescale_cicd_default_application_id }}.json
+    validate_certs: no
+    method: PUT
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 200
+  register: threescale_cicd_tmpresponse
+  when: 'threescale_cicd_default_application_id is defined'
+
+- set_fact:
+    threescale_cicd_default_application_details: '{{ threescale_cicd_tmpresponse.json.application }}'
+  when: 'threescale_cicd_default_application_id is defined'

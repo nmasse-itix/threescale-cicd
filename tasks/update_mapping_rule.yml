@@ -1,0 +1,26 @@
+---
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ "access_token=" ~ threescale_cicd_access_token|urlencode }}'
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ threescale_cicd_tmp_body_update_method ~ "&" ~ (threescale_cicd_tmp_param.key|urlencode) ~ "=" ~ (threescale_cicd_tmp_param.value|urlencode) }}'
+  with_dict: '{{ threescale_cicd_tmp_wanted_mapping_rules[threescale_cicd_tmp_mapping_rule_to_update] }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_param
+
+- set_fact:
+    # Add the metric_id to the payload
+    threescale_cicd_tmp_body_update_method: '{{ threescale_cicd_tmp_body_update_method ~ "&" ~  "metric_id=" ~ ((threescale_cicd_existing_metrics_details|selectattr("system_name", "equalto", threescale_cicd_tmp_mapping_rule_to_update)|first).id|urlencode) }}'
+    # The ID of the mapping rule to update
+    threescale_cicd_tmp_mapping_rule_id: '{{ threescale_cicd_tmp_existing_mapping_rules[threescale_cicd_tmp_mapping_rule_to_update] }}'
+
+- name: Update the mapping rule
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/mapping_rules/{{ threescale_cicd_tmp_mapping_rule_id }}.json
+    validate_certs: no
+    method: PUT
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 200
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'

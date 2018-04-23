@@ -1,0 +1,34 @@
+---
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ "access_token=" ~ threescale_cicd_access_token|urlencode }}'
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ threescale_cicd_tmp_body_update_method ~ "&" ~ (threescale_cicd_tmp_param.key|urlencode) ~ "=" ~ (threescale_cicd_tmp_param.value|urlencode) }}'
+  with_dict: '{{ threescale_cicd_tmp_plan }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_param
+
+- name: Update the application plan
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/application_plans/{{ (threescale_cicd_existing_application_plans_details|selectattr("system_name", "equalto", threescale_cicd_tmp_plan.system_name)|first).id }}.json'
+    validate_certs: no
+    method: PUT
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 200
+  register: threescale_cicd_tmpresponse
+  when: 'threescale_cicd_tmp_plan.system_name in threescale_cicd_existing_application_plans'
+
+- name: Create the application plan
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/application_plans.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  when: 'threescale_cicd_tmp_plan.system_name not in threescale_cicd_existing_application_plans'
+
+- set_fact:
+    threescale_cicd_existing_application_plans: '{{ threescale_cicd_existing_application_plans|union([ threescale_cicd_tmp_plan.system_name ]) }}'
+    threescale_cicd_existing_application_plans_details: '{{ threescale_cicd_existing_application_plans_details|union([{ "system_name": threescale_cicd_tmp_plan.system_name, "id": threescale_cicd_tmpresponse.json.application_plan.id }]) }}'
+  when: 'threescale_cicd_tmp_plan.system_name not in threescale_cicd_existing_application_plans'

@@ -1,0 +1,55 @@
+---
+
+- name: Retrieve existing mapping rules from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/mapping_rules.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmp_allmappingrules
+
+- set_fact:
+    threescale_cicd_existing_mappingrules_details: '{{ threescale_cicd_tmp_allmappingrules.json|json_query(''mapping_rules[].{"metric_id": mapping_rule.metric_id, "id": mapping_rule.id}'') }}'
+    threescale_cicd_tmp_wanted_mapping_rules: {}
+    threescale_cicd_tmp_existing_mapping_rules: {}
+
+- name: Build a list of our expected/wanted mapping rules
+  set_fact:
+    threescale_cicd_tmp_wanted_mapping_rules: '{{ threescale_cicd_tmp_wanted_mapping_rules|combine({ threescale_cicd_tmp_operation.key: { "http_method": threescale_cicd_tmp_operation.value.verb.upper(), "pattern": threescale_cicd_tmp_operation.value.path ~ "$", "delta": 1 } }) }}'
+  with_dict: '{{ threescale_cicd_api_operations }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_operation
+
+- name: Map metric id to system_name
+  set_fact:
+    threescale_cicd_tmp_existing_mapping_rules: '{{ threescale_cicd_tmp_existing_mapping_rules|combine({ (threescale_cicd_existing_metrics_details|selectattr("id", "equalto", threescale_cicd_tmp_metric.metric_id)|first).system_name: threescale_cicd_tmp_metric.id}) }}'
+  with_items: '{{ threescale_cicd_existing_mappingrules_details }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_metric
+
+- set_fact:
+    # create the items that we want but don't have yet
+    threescale_cicd_tmp_mapping_rules_to_create: '{{ threescale_cicd_tmp_wanted_mapping_rules.keys()|difference(threescale_cicd_tmp_existing_mapping_rules.keys()) }}'
+    # delete the items that we don't want but we have
+    threescale_cicd_tmp_mapping_rules_to_delete: '{{ threescale_cicd_tmp_existing_mapping_rules.keys()|difference(threescale_cicd_tmp_wanted_mapping_rules.keys()) }}'
+    # update the items that we want and we have
+    threescale_cicd_tmp_mapping_rules_to_update: '{{ threescale_cicd_tmp_existing_mapping_rules.keys()|intersect(threescale_cicd_tmp_wanted_mapping_rules.keys()) }}'
+
+- include_tasks: "create_mapping_rule.yml"
+  with_items: '{{ threescale_cicd_tmp_mapping_rules_to_create }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_mapping_rule_to_create
+
+- include_tasks: "update_mapping_rule.yml"
+  with_items: '{{ threescale_cicd_tmp_mapping_rules_to_update }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_mapping_rule_to_update
+
+- name: Delete the unused mapping rules
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/mapping_rules/{{ threescale_cicd_tmp_existing_mapping_rules[threescale_cicd_tmp_mapping_rule_to_delete] }}.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+    method: DELETE
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+  with_items: '{{ threescale_cicd_tmp_mapping_rules_to_delete }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_mapping_rule_to_delete

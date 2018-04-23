@@ -1,0 +1,8 @@
+---
+threescale_cicd_openapi_file_format: YAML
+threescale_cicd_delay: 10
+threescale_cicd_retries: 50
+threescale_cicd_default_application_name: 'Ansible smoke-tests default application'
+threescale_cicd_default_application_description: 'This app is used to run smoke tests during the deployment phase. It will be automatically recreated if you delete it.'
+threescale_cicd_staging_environment_name: sandbox
+threescale_cicd_production_environment_name: production

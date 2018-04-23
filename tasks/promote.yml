@@ -1,0 +1,32 @@
+---
+
+- name: Get the version of the staging proxy definition
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_staging_environment_name }}/latest.json?access_token={{ threescale_cicd_access_token|urlencode }}'
+    validate_certs: no
+  register: threescale_cicd_tmpresponse
+
+- set_fact:
+    threescale_cicd_tmp_staging_proxy_version: '{{ threescale_cicd_tmpresponse.json.proxy_config.version }}'
+
+- name: Get the version of the production proxy definition
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_production_environment_name }}/latest.json?access_token={{ threescale_cicd_access_token|urlencode }}'
+    validate_certs: no
+  register: threescale_cicd_tmpresponse
+
+- set_fact:
+    threescale_cicd_tmp_production_proxy_version: '{{ threescale_cicd_tmpresponse.json.proxy_config.version }}'
+
+- set_fact:
+    threescale_cicd_tmp_body_create_svc: 'access_token={{ threescale_cicd_access_token|urlencode }}&to={{ threescale_cicd_production_environment_name|urlencode }}'
+
+- name: Promote to production
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_staging_environment_name }}/{{ threescale_cicd_tmp_staging_proxy_version }}/promote.json'
+    body: '{{ threescale_cicd_tmp_body_create_svc }}'
+    status_code: 201
+    validate_certs: no
+    method: POST
+  register: threescale_cicd_tmpresponse
+  when: 'threescale_cicd_tmp_staging_proxy_version != threescale_cicd_tmp_production_proxy_version'

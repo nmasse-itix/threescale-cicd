@@ -1,0 +1,20 @@
+---
+
+- name: Retrieve existing metrics from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/metrics.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmp_allmetrics
+
+- set_fact:
+    threescale_cicd_existing_metrics: '{{ threescale_cicd_tmp_allmetrics.json|json_query(''metrics[*].metric.system_name'') }}'
+    threescale_cicd_existing_metrics_details: '{{ threescale_cicd_tmp_allmetrics.json|json_query(''metrics[].{"system_name": metric.system_name, "id": metric.id}'') }}'
+
+- name: Find the "hits" metric id
+  set_fact:
+    threescale_cicd_metric_id: '{{ (threescale_cicd_existing_metrics_details|selectattr(''system_name'', ''equalto'', ''hits'')|first).id }}'
+
+- include_tasks: "update_method.yml"
+  with_dict: '{{ threescale_cicd_api_operations }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_operation

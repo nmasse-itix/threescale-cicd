@@ -1,0 +1,57 @@
+---
+
+- import_tasks: create_default_application.yml
+
+- set_fact:
+    threescale_cicd_tmp_gateway_endpoint: ""
+
+- name: Try to get the staging gateway url from extra var / inventory
+  set_fact:
+    threescale_cicd_tmp_gateway_endpoint: '{{ threescale_cicd_apicast_sandbox_endpoint }}'
+  when: "threescale_cicd_apicast_sandbox_endpoint is defined and threescale_cicd_env == 'staging'"
+
+- name: Try to get the production gateway url from extra var / inventory
+  set_fact:
+    threescale_cicd_tmp_gateway_endpoint: '{{ threescale_cicd_apicast_production_endpoint }}'
+  when: "threescale_cicd_apicast_production_endpoint is defined and threescale_cicd_env == 'production'"
+
+- name: Get the gateway endpoint from the proxy definition
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy.json?access_token={{ threescale_cicd_access_token|urlencode }}
+    validate_certs: no
+    method: GET
+  register: threescale_cicd_tmpresponse
+  when: "threescale_cicd_tmp_gateway_endpoint|length == 0"
+
+- name: Extract the staging gateway endpoint from the proxy definition
+  set_fact:
+    threescale_cicd_tmp_gateway_endpoint: '{{ threescale_cicd_tmpresponse.json|json_query(''proxy.sandbox_endpoint'') }}'
+  when: "threescale_cicd_tmp_gateway_endpoint|length == 0 and threescale_cicd_env == 'staging'"
+
+- name: Extract the production gateway endpoint from the proxy definition
+  set_fact:
+    threescale_cicd_tmp_gateway_endpoint: '{{ threescale_cicd_tmpresponse.json|json_query(''proxy.sandbox_endpoint'') }}'
+  when: "threescale_cicd_tmp_gateway_endpoint|length == 0 and threescale_cicd_env == 'production'"
+
+- set_fact:
+    threescale_cicd_openapi_smoketest_querystring: ""
+    threescale_cicd_openapi_smoketest_headers: {}
+
+- include_tasks: smoke_tests_apikey.yml
+  when: 'threescale_cicd_api_security_scheme.type == ''apiKey'''
+
+- include_tasks: smoke_tests_oauth.yml
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+
+- debug:
+    msg: "Starting a smoke test on '{{ threescale_cicd_tmp_gateway_endpoint }}{{ threescale_cicd_openapi_smoketest_path }}'..."
+
+- name: Running smoke tests !
+  uri:
+    url: '{{ threescale_cicd_tmp_gateway_endpoint }}{{ threescale_cicd_openapi_smoketest_path }}{{ threescale_cicd_openapi_smoketest_querystring }}'
+    headers: '{{ threescale_cicd_openapi_smoketest_headers }}'
+    validate_certs: no
+    method: GET
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'

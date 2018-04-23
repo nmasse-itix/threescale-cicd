@@ -1,0 +1,11 @@
+---
+
+- name: Retrieve existing ActiveDocs from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/active_docs.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmp_allactivedocs
+
+- set_fact:
+    threescale_cicd_existing_activedocs: '{{ threescale_cicd_tmp_allactivedocs.json|json_query(''api_docs[*].api_doc.system_name'') }}'
+    threescale_cicd_existing_activedocs_details: '{{ threescale_cicd_tmp_allactivedocs.json|json_query(''api_docs[].{"system_name": api_doc.system_name, "id": api_doc.id}'') }}'

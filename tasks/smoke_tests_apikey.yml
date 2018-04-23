@@ -1,0 +1,9 @@
+---
+
+- set_fact:
+    threescale_cicd_openapi_smoketest_querystring: "?{{ threescale_cicd_api_security_scheme.name|urlencode }}={{ threescale_cicd_default_application_details.user_key }}"
+  when: 'threescale_cicd_api_credentials_location == "query"'
+
+- set_fact:
+    threescale_cicd_openapi_smoketest_headers: "{{ threescale_cicd_openapi_smoketest_headers|combine({ threescale_cicd_api_security_scheme.name|urlencode: threescale_cicd_default_application_details.user_key}) }}"
+  when: 'threescale_cicd_api_credentials_location == "headers"'
