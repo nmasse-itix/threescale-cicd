@@ -13,10 +13,16 @@
   uri:
     url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_production_environment_name }}/latest.json?access_token={{ threescale_cicd_access_token|urlencode }}'
     validate_certs: no
+    status_code: 200,404
   register: threescale_cicd_tmpresponse
 
 - set_fact:
     threescale_cicd_tmp_production_proxy_version: '{{ threescale_cicd_tmpresponse.json.proxy_config.version }}'
+  when: 'threescale_cicd_tmpresponse.status == 200'
+
+- set_fact:
+    threescale_cicd_tmp_production_proxy_version: 'NONE'
+  when: 'threescale_cicd_tmpresponse.status == 404'
 
 - set_fact:
     threescale_cicd_tmp_body_create_svc: 'access_token={{ threescale_cicd_access_token|urlencode }}&to={{ threescale_cicd_production_environment_name|urlencode }}'
