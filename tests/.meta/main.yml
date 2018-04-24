@@ -5,7 +5,7 @@
   gather_facts: no
   tasks:
   - set_fact:
-      threescale_inventory: '{{ lookup(''env'', ''THREESCALE_INVENTORY'')|from_json }}'
+      threescale_inventory: '{{ lookup(''env'', ''THREESCALE_INVENTORY'')|b64decode|from_json }}'
     when: 'threescale_inventory is not defined and lookup(''env'', ''THREESCALE_INVENTORY'')|length > 0'
 
   - set_fact:
