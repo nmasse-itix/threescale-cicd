@@ -1,0 +1,8 @@
+[all:vars]
+ansible_connection=local
+
+[threescale]
+{{ threescale_inventory.threescale_hosted.admin_portal }}
+
+[threescale:vars]
+threescale_cicd_access_token={{ threescale_inventory.threescale_hosted.access_token }}
