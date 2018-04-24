@@ -30,7 +30,7 @@
 
 - name: Extract the production gateway endpoint from the proxy definition
   set_fact:
-    threescale_cicd_tmp_gateway_endpoint: '{{ threescale_cicd_tmpresponse.json|json_query(''proxy.sandbox_endpoint'') }}'
+    threescale_cicd_tmp_gateway_endpoint: '{{ threescale_cicd_tmpresponse.json|json_query(''proxy.endpoint'') }}'
   when: "threescale_cicd_tmp_gateway_endpoint|length == 0 and threescale_cicd_env == 'production'"
 
 - set_fact:
