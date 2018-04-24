@@ -1,0 +1,11 @@
+language: python
+python:
+- '2.7'
+install:
+- pip install ansible==2.4.0
+script:
+- ansible-playbook -i tests/.meta/inventory tests/.meta/main.yml
+- for test in tests/*/; do ansible-playbook -i $test/inventory $test/test.yml; done
+env:
+  global:
+    secure: y8wOohDJ9LLkj5mHZzOKdGVQEVsPXunBfZmtEwuRBplovVdzJGSG8Ks/zjhmTjy9n/9yd2B+aN5ewe+QhEwH99ziJW8Ab2u04WIXAt0T9UZYkNAF88d6ZqYUjKdYaqB5WRKdYrtdwjKYKZjUzd/p55uOzFcTQg4tY4iiiJWxq5tvthwx6w9PSHzkSnuOYJYwzrYvtF5LMLdQyXHjhOa+Q+XeaVb9K7+PExfbKAr9gvSUD5oBTnqlmKHPlTakqaeYt4QemtrzVU/wyGUz59JJMVx0dArMg1JiQGs63GmRaAAEuDgDJX0S+t+t5ICeVIpJRmVNp1lUtXXEvijaXTK+967tP/KBfdL8PrA5tXwIw7ZDoaU5TYeZtQRQlE4oTU7W1p5g00ypN6AfZYXGzC0MYn4/7Q+/bAEa8SWnMJwjfRsn0iuG0NkW1TeJvuL4tB+n1XrqSGFMRdGwi9ooGXn8A45Rtumx+/r39R0cm2NARiuVFenH2L1fSDfcsZyWfXP5GMfqgYvPJv++Jd/rCpCu/Y4Vs0zpeZgs/gMktDARhfuM7a5XimSzSOufwyllxWGZpJo4DsBtHkTSoHggJ4r9tWEh5QmzNnzongUkdGuNYq3HgkwnXckroHNmcltY5x2b0weRKWQ2f92TLaZHJsDXZ+cVwCjUych1uBhW3+QPCRc=
