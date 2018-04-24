@@ -1,0 +1,26 @@
+---
+
+- name: Write the inventory files for the included test cases
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - set_fact:
+      threescale_inventory: '{{ lookup(''env'', ''THREESCALE_INVENTORY'')|from_json }}'
+    when: 'threescale_inventory is not defined and lookup(''env'', ''THREESCALE_INVENTORY'')|length > 0'
+
+  - set_fact:
+      threescale_inventory: '{{ lookup(''file'', ''3scale-inventory.yaml'')|from_yaml }}'
+    when: 'threescale_inventory is not defined'
+
+  - name: Find the Jinja2 templates to process
+    find:
+      paths: '{{ playbook_dir }}/../'
+      patterns: 'inventory.j2'
+      recurse: yes
+    register: templates
+
+  - name: Process the Jinja2 templates
+    template:
+      src: '{{ item }}'
+      dest: '{{ item|replace(".j2", "") }}'
+    with_items: '{{ templates.files|json_query(''[*].path'') }}'
