@@ -1,0 +1,92 @@
+---
+
+- name: Retrieve existing ActiveDocs from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/active_docs.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmp_allactivedocs
+
+- set_fact:
+    threescale_cicd_existing_activedocs: '{{ threescale_cicd_tmp_allactivedocs.json|json_query(''api_docs[*].api_doc.system_name'') }}'
+    threescale_cicd_existing_activedocs_details: '{{ threescale_cicd_tmp_allactivedocs.json|json_query(''api_docs[].{"system_name": api_doc.system_name, "id": api_doc.id}'') }}'
+
+- name: Get the production gateway endpoint from the proxy definition
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy.json?access_token={{ threescale_cicd_access_token|urlencode }}
+    validate_certs: no
+    method: GET
+  register: threescale_cicd_tmpresponse
+  when: "threescale_cicd_apicast_production_endpoint is not defined"
+
+- name: Extract the production gateway endpoint from the proxy definition
+  set_fact:
+    threescale_cicd_apicast_production_endpoint: '{{ threescale_cicd_tmpresponse.json|json_query(''proxy.endpoint'') }}'
+  when: "threescale_cicd_apicast_production_endpoint is not defined"
+
+- set_fact:
+    threescale_cicd_apicast_production_scheme: '{{ threescale_cicd_apicast_production_endpoint|regex_findall(''^(\w+)://'')|first }}'
+    threescale_cicd_apicast_production_hostname: '{{ threescale_cicd_apicast_production_endpoint|regex_findall(''^\w+://(.+)$'')|first }}'
+
+- set_fact:
+    threescale_cicd_openapi_rewritten: '{{ threescale_cicd_openapi_file_content }}'
+
+- name: Rewrite the OpenAPI file (schemes)
+  set_fact:
+    threescale_cicd_openapi_rewritten: '{{ threescale_cicd_openapi_rewritten|combine({ ''schemes'': [ threescale_cicd_apicast_production_scheme ] }) }}'
+
+- name: Rewrite the OpenAPI file (host)
+  set_fact:
+    threescale_cicd_openapi_rewritten: '{{ threescale_cicd_openapi_rewritten|combine({ ''host'': threescale_cicd_apicast_production_hostname }) }}'
+
+- name: Add the RH-SSO endpoints to the OpenAPI securityDefinitions
+  set_fact:
+    threescale_cicd_api_security_definitions: '{{ threescale_cicd_api_security_definitions|combine({ threescale_cicd_api_security_scheme_name: (threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme_name]|combine({ ''authorizationUrl'': threescale_cicd_sso_realm_endpoint ~ ''/protocol/openid-connect/auth'', ''tokenUrl'': threescale_cicd_sso_realm_endpoint ~ ''/protocol/openid-connect/token'' })) }) }}'
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+
+- name: Add the RH-SSO default scope to the OpenAPI securityDefinitions
+  set_fact:
+    threescale_cicd_api_security_definitions: '{{ threescale_cicd_api_security_definitions|combine({ threescale_cicd_api_security_scheme_name: (threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme_name]|combine({ ''scopes'': threescale_cicd_default_oauth_scopes})) }) }}'
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'' and ''scopes'' not in threescale_cicd_api_security_scheme'
+
+- name: Rewrite the OpenAPI file (securityDefinitions)
+  set_fact:
+    threescale_cicd_openapi_rewritten: '{{ threescale_cicd_openapi_rewritten|combine({ ''securityDefinitions'': threescale_cicd_api_security_definitions }) }}'
+
+- set_fact:
+    threescale_cicd_tmp_activedoc_payload:
+      name: '{{ threescale_cicd_api_name }}'
+      system_name: '{{ threescale_cicd_api_system_name }}'
+      body: '{{ threescale_cicd_openapi_rewritten|to_nice_json }}'
+      description: '{{ threescale_cicd_api_description }}'
+      published: 'true'
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ "access_token=" ~ threescale_cicd_access_token|urlencode }}'
+
+- set_fact:
+    threescale_cicd_tmp_body_update_method: '{{ threescale_cicd_tmp_body_update_method ~ "&" ~ (threescale_cicd_tmp_param.key|urlencode) ~ "=" ~ (threescale_cicd_tmp_param.value|urlencode) }}'
+  with_dict: '{{ threescale_cicd_tmp_activedoc_payload }}'
+  loop_control:
+    loop_var: threescale_cicd_tmp_param
+
+- name: Update the ActiveDocs
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/active_docs/{{ (threescale_cicd_existing_activedocs_details|selectattr('system_name', 'equalto', threescale_cicd_api_system_name)|first).id }}.json
+    validate_certs: no
+    method: PUT
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 200
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+  when: 'threescale_cicd_api_system_name in threescale_cicd_existing_activedocs'
+
+- name: Create the ActiveDocs
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/active_docs.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_tmp_body_update_method }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_activedocs'

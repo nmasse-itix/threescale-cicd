@@ -15,6 +15,11 @@
     threescale_cicd_sso_issuer_endpoint: '{{ (hostvars[groups[''sso''][0]].scheme|default(''https'')) ~ ''://'' ~ hostvars[groups[''sso''][0]].client_id ~ '':'' ~ hostvars[groups[''sso''][0]].client_secret ~ ''@'' ~ groups[''sso''][0] ~ ''/auth/realms/'' ~ hostvars[groups[''sso''][0]].realm }}'
   when: 'threescale_cicd_sso_issuer_endpoint is not defined and ''sso'' in groups and groups[''sso''] > 0'
 
+- name: Set the threescale_cicd_sso_realm_endpoint variable from the inventory
+  set_fact:
+    threescale_cicd_sso_realm_endpoint: '{{ (hostvars[groups[''sso''][0]].scheme|default(''https'')) ~ ''://'' ~ groups[''sso''][0] ~ ''/auth/realms/'' ~ hostvars[groups[''sso''][0]].realm }}'
+  when: 'threescale_cicd_sso_realm_endpoint is not defined and ''sso'' in groups and groups[''sso''] > 0'
+
 - name: Set the threescale_cicd_apicast_sandbox_endpoint variable from the inventory
   set_fact:
     threescale_cicd_apicast_sandbox_endpoint: '{{ (hostvars[groups[''apicast-sandbox''][0]].scheme|default(''https'')) ~ ''://'' ~ groups[''apicast-sandbox''][0] }}'
@@ -27,9 +32,6 @@
 
 # Load the API definition from the provided OpenAPI file
 - import_tasks: read_openapi_file.yml
-
-# Retrieve existing services from the 3scale Admin Portal
-- import_tasks: retrieve_existing_services.yml
 
 - name: Compute the service system_name
   set_fact:
@@ -68,7 +70,7 @@
 - set_fact:
     threescale_cicd_api_proxy_definition:
       credentials_location: '{{ threescale_cicd_api_credentials_location }}'
-      api_backend: '{{ threescale_cicd_api_backend_scheme ~ ''://'' ~ threescale_cicd_api_backend_hostname }}'
+      api_backend: '{{ threescale_cicd_private_base_url }}'
 
 - set_fact:
     threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''auth_user_key'': threescale_cicd_api_security_scheme.name }) }}'
@@ -124,3 +126,6 @@
 
 # Delete the metrics that are not needed anymore
 - import_tasks: delete_unused_metrics.yml
+
+# Publish the OpenAPI Specifications file on the 3scale Admin Portal
+- import_tasks: create_activedocs.yml

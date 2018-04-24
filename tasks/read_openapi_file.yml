@@ -23,6 +23,7 @@
 - name: Extract API Methods
   set_fact:
     threescale_cicd_api_name: '{{ threescale_cicd_openapi_file_content.info.title|default("API") }}'
+    threescale_cicd_api_description: '{{ threescale_cicd_openapi_file_content.info.description|default("") }}'
     threescale_cicd_api_basepath: '{{ threescale_cicd_openapi_file_content.basePath|default("") }}'
     threescale_cicd_api_operations: >-
         {% set operations = {} -%}
@@ -64,7 +65,7 @@
 
 - name: Extract the security definitions and requirements from OpenAPI
   set_fact:
-    threescale_cicd_api_security_requirements: '{{ threescale_cicd_openapi_file_content.security|default({}) }}'
+    threescale_cicd_api_security_requirements: '{{ threescale_cicd_openapi_file_content.security|default([]) }}'
     threescale_cicd_api_security_definitions: '{{ threescale_cicd_openapi_file_content.securityDefinitions|default({}) }}'
 
 - name: Make sure there is one and exactly one security requirement
@@ -75,16 +76,16 @@
 
 - name: Find the security requirement to use
   set_fact:
-    threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_requirements.keys()[0] }}'
+    threescale_cicd_api_security_scheme_name: '{{ threescale_cicd_api_security_requirements[0].keys()[0] }}'
 
 - name: Make sure the requested security definition exists
   assert:
     that:
-    - 'threescale_cicd_api_security_scheme in threescale_cicd_api_security_definitions'
+    - 'threescale_cicd_api_security_scheme_name in threescale_cicd_api_security_definitions'
 
 - name: Find the security definition to use
   set_fact:
-    threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme] }}'
+    threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme_name] }}'
 
 - name: Make sure the security scheme is consistent with 3scale
   assert:
@@ -111,12 +112,16 @@
     threescale_cicd_api_backend_scheme: '{{ threescale_cicd_openapi_file_content.schemes|default(["http"])|first }}'
   when: 'threescale_cicd_api_backend_scheme is not defined'
 
+- name: Compute the private base url from the OpenAPI file
+  set_fact:
+    threescale_cicd_private_base_url: '{{ threescale_cicd_api_backend_scheme ~ ''://'' ~ threescale_cicd_api_backend_hostname }}'
+  when: 'threescale_cicd_private_base_url is not defined'
+
 - assert:
     that:
     - 'threescale_cicd_api_backend_scheme is defined'
     - 'threescale_cicd_api_backend_hostname is defined'
     msg: 'The backend hostname and scheme must either be in the swagger or declared as extra variables (threescale_cicd_api_backend_scheme / threescale_cicd_api_backend_hostname)'
-
 
 - name: Find the smoke-test flagged operation
   set_fact:
