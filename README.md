@@ -83,20 +83,26 @@ The important bits of the inventory file are:
 - the [3scale access token](https://access.redhat.com/documentation/en-us/red_hat_3scale/2.saas/html-single/accounts/index#access_tokens) needs to be set in the `threescale_cicd_access_token` variable.
 - since no SSH connection is needed (we only use the 3scale Admin APIs), `ansible_connection=local` is set to the whole inventory.
 
-You can now write the playbook:
+You can now write the playbook (`deploy-api.yaml`):
 ```
 - hosts: threescale
   gather_facts: no
   vars:
-    threescale_cicd_openapi_file: '/path/to/api-swagger.yaml'
+    threescale_cicd_openapi_file: 'api-swagger.yaml'
   roles:
-  - threescale-cicd
+  - nmasse-itix.threescale-cicd
 ```
 
 The main parts are:
 - `threescale_cicd_openapi_file` is the path to the swagger file defined in step 1.
-- the `threescale-cicd` role is used.
+- the `nmasse-itix.threescale-cicd` role is used.
 - `gather_facts: no` needs to be used since there is no SSH connection to the target systems.
+
+Finally, you can run the playbook:
+```
+ansible-galaxy install nmasse-itix.threescale-cicd
+ansible-playbook -i inventory deploy-api.yaml
+```
 
 ## Role Variables
 
