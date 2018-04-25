@@ -55,3 +55,5 @@
   register: threescale_cicd_tmpresponse
   retries: '{{ threescale_cicd_retries }}'
   delay: '{{ threescale_cicd_delay }}'
+  # temporary fix for https://github.com/ansible/ansible/issues/28078
+  until: 'threescale_cicd_tmpresponse|success'
