@@ -69,9 +69,13 @@
   loop_control:
     loop_var: threescale_cicd_tmp_param
 
+- set_fact:
+    threescale_cicd_api_activedocs_id: '{{ (threescale_cicd_existing_activedocs_details|selectattr(''system_name'', ''equalto'', threescale_cicd_api_system_name)|first).id }}'
+  when: 'threescale_cicd_api_system_name in threescale_cicd_existing_activedocs'
+
 - name: Update the ActiveDocs
   uri:
-    url: https://{{ inventory_hostname }}/admin/api/active_docs/{{ (threescale_cicd_existing_activedocs_details|selectattr('system_name', 'equalto', threescale_cicd_api_system_name)|first).id }}.json
+    url: 'https://{{ inventory_hostname }}/admin/api/active_docs/{{ threescale_cicd_api_activedocs_id }}.json'
     validate_certs: no
     method: PUT
     body: '{{ threescale_cicd_tmp_body_update_method }}'
@@ -89,4 +93,13 @@
     status_code: 201
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 201'
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_activedocs'
+
+- set_fact:
+    threescale_cicd_api_activedocs_id: '{{ threescale_cicd_tmpresponse.json.api_doc.id }}'
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_activedocs'
+
+- set_fact:
+    threescale_cicd_existing_services: '{{ threescale_cicd_existing_activedocs|union([ threescale_cicd_tmpresponse.json.api_doc.system_name ]) }}'
+    threescale_cicd_existing_services_details: '{{ threescale_cicd_existing_activedocs_details|union([ { ''id'': threescale_cicd_tmpresponse.json.api_doc.id, ''system_name'': threescale_cicd_tmpresponse.json.api_doc.system_name } ]) }}'
   when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_activedocs'
