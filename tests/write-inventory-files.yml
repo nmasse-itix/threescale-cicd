@@ -3,6 +3,8 @@
 - name: Write the inventory files for the included test cases
   hosts: localhost
   gather_facts: no
+  vars:
+    ansible_connection: local
   tasks:
   - set_fact:
       threescale_inventory: '{{ lookup(''env'', ''THREESCALE_INVENTORY'')|b64decode|from_json }}'
@@ -14,9 +16,9 @@
 
   - name: Find the Jinja2 templates to process
     find:
-      paths: '{{ playbook_dir }}/../'
-      patterns: 'inventory.j2'
-      recurse: yes
+      paths: '{{ playbook_dir }}'
+      patterns: '*.j2'
+      recurse: no
     register: templates
 
   - name: Process the Jinja2 templates

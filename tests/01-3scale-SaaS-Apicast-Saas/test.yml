@@ -1,9 +1,0 @@
----
-
-- name: Deploy the Echo API to a 3scale SaaS instance, with hosted APIcasts
-  hosts: threescale
-  gather_facts: no
-  vars:
-    threescale_cicd_openapi_file: '{{ playbook_dir }}/echo-api.yaml'
-  roles:
-  - threescale-cicd

@@ -5,8 +5,8 @@ install:
 - pip install ansible==2.4.0
 - pip install jmespath
 script:
-- ansible-playbook -i tests/.meta/inventory tests/.meta/main.yml
-- ansible-playbook -i tests/01-*/inventory tests/01-*/test.yml
+- ansible-playbook tests/write-inventory-files.yml
+- ansible-playbook -i tests/inventory tests/3scale-saas-with-hosted-apicast.yml
 env:
   global:
     secure: 0Ov2beobc70Avi7EW634Jn7Y/ILTiql/llnfTkWBlaHLQCmI//xBON95qLjaksoBqCo0AMYRUAM2Rek50qNMqOxgM+AgYCSwZeRwZnIwj+J4FHrb6kHpFGPK64iu/AQROjFKOPwI/0vl7kmUYEuQRwTbLwuS4gxxm7COpje436sJfRb6yag1dRzLOaXade2pr8ojdeByw6PyJGkJQ6To/gCyJ+UOTqhwQLTkqK+WcnrcTCRAUauVDfJr+8wXz9IZJp1hX5NIAcv8BFSs2KQWU90YKQ2B2ruZnmY4CBlvE+xh/O0ltssphDBy+b4nqwVNdb+3I1sawKGGAmawz1pBc2rqE28CmMhuUXdLkJ5oUOKsBfiygDMh7j5+fqTanyeOVMYHOZ6U5zNaQiU+aFdnqexXgnj19Yn/3cpkceQgUwyTtZj63lkUVB2mk7rPcpprVBNmCUr2SfRpHA943NtERIbB4pRRUIOoDOcR8ngj7NZaAt9crghP7pz6DKwT9PVkjzJFODqAQ4lGtOcZ8db4TUfpmVCvQIhYXxZYZX6mDNNFUTreDRJVjfXUMjvhCeub4nJ86ODcpShDFlVh+clVBcWrmlwR4EvEuy0kLaALZFS2C/Y6xTDdPI1b4He/2Ciefd1EPdwM+hmbZMk0T0+H7TfK86/nnPBNw58q00k3+dA=
