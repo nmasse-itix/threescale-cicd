@@ -1,10 +1,9 @@
-ansible-cicd
-=========
+# ansible-cicd
+
 [![Build Status](https://travis-ci.org/nmasse-itix/threescale-cicd.svg?branch=master)](https://travis-ci.org/nmasse-itix/threescale-cicd)
 Enables Continuous Delivery with Red Hat 3scale API Management Platform (3scale AMP).
 
-Requirements
-------------
+## Requirements
 
 This role requires:
  - an instance of 3scale API Management Platform (hosted or on-premise)
@@ -20,18 +19,15 @@ you can install it with:
 pip install jmespath
 ```
 
-Role Variables
---------------
+## Role Variables
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+TODO
 
-Dependencies
-------------
+## Dependencies
 
 This role has no dependencies.
 
-Example: Deploy an API on 3scale SaaS with hosted APIcast gateways
-----------------
+## Example: Deploy an API on 3scale SaaS with hosted APIcast gateways
 
 If you want to deploy the classic "Echo API" on a SaaS 3scale instance using API Keys,
 you can do it in three steps:
@@ -40,7 +36,7 @@ you can do it in three steps:
  3. Write the playbook
  4. Run the playbook!
 
-First, make sure your swagger file has the required information:
+First, make sure your swagger file (`api-swagger.yaml`) has the required information:
 ```
 swagger: '2.0'
 info:
@@ -66,15 +62,35 @@ securityDefinitions:
     in: header
     type: apiKey
 ```
+
 In this Swagger file, the following fields are used:
-- `x-threescale-system-name` is used as system_name for the configuration objects in 3scale
-- `title` is used as the name of the service definition
+- `x-threescale-system-name` is used as system_name for the configuration objects in 3scale.
+- `title` is used as the name of the service definition.
 - `version` is used for proper versioning and follows the [semver scheme](https://semver.org/).
-- `host` is the DNS name of the existing API backend to expose
-- `schemes` is the
+- `host` is the DNS name of the existing API backend to expose.
+- the `operationId` fields are used as the system_name for the methods/metrics.
+- the `summary` and `description` fields are used as name and description for the methods/metrics.
+- `x-threescale-smoketests-operation` is used to flag one operation as usable for smoke tests. The method needs to be idempotent, read-only and without parameters. If no method is flagged as smoke tests, the smoke tests are just skipped.
+- the `security` and `securityDefinitions` are used to determine the security scheme of the exposed API. In this example, we are using the API Keys scheme.
 
+Then, write the `inventory` file:
+```
+[all:vars]
+ansible_connection=local
 
+[threescale]
+<TENANT>-admin.3scale.net
 
+[threescale:vars]
+threescale_cicd_access_token=<ACCESS_TOKEN>
+```
+
+The important bits of the inventory file are:
+- the 3scale admin portal needs to be declared in a group named `threescale`.
+- the [3scale access token](https://access.redhat.com/documentation/en-us/red_hat_3scale/2.saas/html-single/accounts/index#access_tokens) needs to be set in the `threescale_cicd_access_token` variable.
+- since no SSH connection is needed (we only use the 3scale Admin APIs), `ansible_connection=local` is set to the whole inventory.
+
+You can now write the playbook:
 ```
 - hosts: threescale
   gather_facts: no
@@ -84,12 +100,15 @@ In this Swagger file, the following fields are used:
   - threescale-cicd
 ```
 
-License
--------
+The main parts are:
+- `threescale_cicd_openapi_file` is the path to the swagger file defined in step 1.
+- the `threescale-cicd` role is used.
+- `gather_facts: no` needs to be used since there is no SSH connection to the target systems.
+
+## License
 
 BSD
 
-Author Information
-------------------
+## Author Information
 
 - Nicolas Massé, Red Hat
