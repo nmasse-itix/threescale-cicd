@@ -1,5 +1,15 @@
 ---
 
+- name: Retrieve existing Services from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmp_allservices
+
+- set_fact:
+    threescale_cicd_existing_services: '{{ threescale_cicd_tmp_allservices.json|json_query(''services[*].service.system_name'') }}'
+    threescale_cicd_existing_services_details: '{{ threescale_cicd_tmp_allservices.json|json_query(''services[].{"system_name": service.system_name, "id": service.id}'') }}'
+
 - set_fact:
     threescale_cicd_tmp_body_create_svc: '{{ "access_token=" ~ threescale_cicd_access_token|urlencode }}'
 
@@ -9,35 +19,9 @@
   loop_control:
     loop_var: threescale_cicd_tmp_param
 
-- name: Create the service
-  uri:
-    url: https://{{ inventory_hostname }}/admin/api/services.json
-    validate_certs: no
-    method: POST
-    body: '{{ threescale_cicd_tmp_body_create_svc }}'
-    status_code: 201,422
-  register: threescale_cicd_tmpresponse
-  changed_when: 'threescale_cicd_tmpresponse.status == 201'
-
-- set_fact:
-    threescale_cicd_api_service_id: '{{ threescale_cicd_tmpresponse.json.service.id }}'
-  when: 'threescale_cicd_tmpresponse.status == 201'
-
-- name: Retrieve existing Services from the 3scale Admin Portal
-  uri:
-    url: "https://{{ inventory_hostname }}/admin/api/services.json?access_token={{ threescale_cicd_access_token|urlencode }}"
-    validate_certs: no
-  register: threescale_cicd_tmp_allservices
-  when: 'threescale_cicd_tmpresponse.status == 422'
-
-- set_fact:
-    threescale_cicd_existing_services: '{{ threescale_cicd_tmp_allservices.json|json_query(''services[*].service.system_name'') }}'
-    threescale_cicd_existing_services_details: '{{ threescale_cicd_tmp_allservices.json|json_query(''services[].{"system_name": service.system_name, "id": service.id}'') }}'
-  when: 'threescale_cicd_tmpresponse.status == 422'
-
 - set_fact:
     threescale_cicd_api_service_id: '{{ (threescale_cicd_existing_services_details|selectattr(''system_name'', ''equalto'', threescale_cicd_api_system_name)|first)[''id''] }}'
-  when: 'threescale_cicd_tmpresponse.status == 422'
+  when: 'threescale_cicd_api_system_name in threescale_cicd_existing_services'
 
 - name: Update the service
   uri:
@@ -48,4 +32,23 @@
     status_code: 200
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
-  when: 'threescale_cicd_tmpresponse.status == 422'
+  when: 'threescale_cicd_api_system_name in threescale_cicd_existing_services'
+
+- name: Create the service
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_tmp_body_create_svc }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_services'
+
+- set_fact:
+    threescale_cicd_api_service_id: '{{ threescale_cicd_tmpresponse.json.service.id }}'
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_services'
+
+- set_fact:
+    threescale_cicd_existing_services: '{{ threescale_cicd_existing_services|union([ threescale_cicd_tmpresponse.json.service.system_name ]) }}'
+    threescale_cicd_existing_services_details: '{{ threescale_cicd_existing_services_details|union([ { ''id'': threescale_cicd_tmpresponse.json.service.id, ''system_name'': threescale_cicd_tmpresponse.json.service.system_name } ]) }}'
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_services'
