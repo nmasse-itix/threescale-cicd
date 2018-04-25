@@ -16,4 +16,5 @@ galaxy_info:
   - 3scale
   - threescale
   - 3scale-amp
+  platforms: []
 dependencies: []
