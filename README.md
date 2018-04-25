@@ -1,6 +1,7 @@
 # ansible-cicd
 
 [![Build Status](https://travis-ci.org/nmasse-itix/threescale-cicd.svg?branch=master)](https://travis-ci.org/nmasse-itix/threescale-cicd)
+
 Enables Continuous Delivery with Red Hat 3scale API Management Platform (3scale AMP).
 
 ## Requirements
