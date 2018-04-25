@@ -20,14 +20,6 @@ you can install it with:
 pip install jmespath
 ```
 
-## Role Variables
-
-TODO
-
-## Dependencies
-
-This role has no dependencies.
-
 ## Example: Deploy an API on 3scale SaaS with hosted APIcast gateways
 
 If you want to deploy the classic "Echo API" on a SaaS 3scale instance using API Keys,
@@ -105,6 +97,14 @@ The main parts are:
 - `threescale_cicd_openapi_file` is the path to the swagger file defined in step 1.
 - the `threescale-cicd` role is used.
 - `gather_facts: no` needs to be used since there is no SSH connection to the target systems.
+
+## Role Variables
+
+TODO
+
+## Dependencies
+
+This role has no dependencies.
 
 ## License
 
