@@ -55,7 +55,7 @@
 
 - name: Extract the wanted system_name from OpenAPI
   set_fact:
-    threescale_cicd_api_system_name: '{{ threescale_cicd_openapi_file_content.info[''x-threescale-system-name''] }}'
+    threescale_cicd_api_system_name: '{{ threescale_cicd_openapi_file_content.info[''x-threescale-system-name'']|regex_replace(''[^a-zA-Z0-9_]+'', ''_'') }}'
   when: 'threescale_cicd_api_system_name is not defined and ''x-threescale-system-name'' in threescale_cicd_openapi_file_content.info'
 
 - name: Generate a system_name from the API title
