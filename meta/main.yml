@@ -15,6 +15,8 @@ galaxy_info:
   - management
   - 3scale
   - threescale
-  - 3scale-amp
-  platforms: []
+  platforms:
+  - name: GenericLinux
+    versions:
+    - any
 dependencies: []
