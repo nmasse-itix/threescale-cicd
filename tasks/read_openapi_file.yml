@@ -68,7 +68,7 @@
 
 - name: Compute the system_name prefix to prepend to the generated system_name
   set_fact:
-    threescale_cicd_api_system_name_prefix: '{{ (threescale_cicd_api_system_name is not defined and threescale_cicd_env is defined)|ternary((threescale_cicd_env|regex_replace(''[^a-zA-Z0-9_]+'', ''_'')) ~ "_", "") }}'
+    threescale_cicd_api_system_name_prefix: '{{ (threescale_cicd_api_system_name is not defined and threescale_cicd_env is defined)|ternary((threescale_cicd_env|default("")|regex_replace(''[^a-zA-Z0-9_]+'', ''_'')) ~ "_", "") }}'
 
 - name: Extract the wanted system_name from OpenAPI
   set_fact:
