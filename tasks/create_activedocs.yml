@@ -38,6 +38,10 @@
   set_fact:
     threescale_cicd_openapi_rewritten: '{{ threescale_cicd_openapi_rewritten|combine({ ''host'': threescale_cicd_apicast_production_hostname }) }}'
 
+- name: Rewrite the Swagger file (swagger version as string)
+  set_fact:
+    threescale_cicd_openapi_rewritten: '{{ threescale_cicd_openapi_rewritten|combine({ ''swagger'': threescale_cicd_openapi_rewritten.swagger ~ "" }) }}'
+
 - name: Add the RH-SSO endpoints to the OpenAPI securityDefinitions
   set_fact:
     threescale_cicd_api_security_definitions: '{{ threescale_cicd_api_security_definitions|combine({ threescale_cicd_api_security_scheme_name: (threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme_name]|combine({ ''authorizationUrl'': threescale_cicd_sso_realm_endpoint ~ ''/protocol/openid-connect/auth'', ''tokenUrl'': threescale_cicd_sso_realm_endpoint ~ ''/protocol/openid-connect/token'' })) }) }}'
