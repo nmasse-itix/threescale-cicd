@@ -24,6 +24,7 @@
   set_fact:
     threescale_cicd_api_name: '{{ threescale_cicd_openapi_file_content.info.title|default("API") }}'
     threescale_cicd_api_description: '{{ threescale_cicd_openapi_file_content.info.description|default("") }}'
+    threescale_cicd_api_version: '{{ threescale_cicd_openapi_file_content.info.version|default("0.0.1") }}'
     threescale_cicd_api_basepath: '{{ threescale_cicd_openapi_file_content.basePath|default("") }}'
     threescale_cicd_api_operations: >-
         {% set operations = {} -%}
@@ -53,6 +54,18 @@
         {% endif -%}
         {{ operations }}
 
+- name: Extract components from the version number
+  set_fact:
+    threescale_cicd_api_version_components: '{{ threescale_cicd_api_version.split(".") }}'
+
+- name: Find the major version
+  set_fact:
+    threescale_cicd_api_version_major: '{{ threescale_cicd_api_version_components|first }}'
+
+- name: Compute the system_name suffix to append to the generated system_name
+  set_fact:
+    threescale_cicd_api_system_name_suffix: '{{ (threescale_cicd_api_system_name is not defined)|ternary("_" ~ (threescale_cicd_api_version_major|regex_replace(''[^a-zA-Z0-9_]+'', ''_'')), "") }}'
+
 - name: Extract the wanted system_name from OpenAPI
   set_fact:
     threescale_cicd_api_system_name: '{{ threescale_cicd_openapi_file_content.info[''x-threescale-system-name'']|regex_replace(''[^a-zA-Z0-9_]+'', ''_'') }}'
@@ -62,6 +75,14 @@
   set_fact:
     threescale_cicd_api_system_name: '{{ threescale_cicd_openapi_file_content.info[''title'']|default(''api'')|regex_replace(''[^a-zA-Z0-9_]+'', ''_'') }}'
   when: 'threescale_cicd_api_system_name is not defined'
+
+- name: Append the major version to the system_name
+  set_fact:
+    threescale_cicd_api_system_name: '{{ threescale_cicd_api_system_name }}{{ threescale_cicd_api_system_name_suffix }}'
+
+- name: Append the full version to the API title
+  set_fact:
+    threescale_cicd_api_name: '{{ threescale_cicd_api_name }} (v{{ threescale_cicd_api_version }})'
 
 - name: Extract the security definitions and requirements from OpenAPI
   set_fact:
