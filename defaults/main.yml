@@ -6,6 +6,9 @@ threescale_cicd_default_application_name: 'Ansible smoke-tests default applicati
 threescale_cicd_default_application_description: 'This app is used to run smoke tests during the deployment phase. It will be automatically recreated if you delete it.'
 threescale_cicd_staging_environment_name: sandbox
 threescale_cicd_production_environment_name: production
+threescale_cicd_default_staging_suffix: -staging
+threescale_cicd_default_production_suffix: ""
+threescale_cicd_default_apicast_scheme: https
 threescale_cicd_default_oauth_scopes:
   openid: Any OpenID Connect token
 threescale_cicd_application_plans:
