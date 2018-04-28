@@ -15,10 +15,15 @@
     threescale_cicd_sso_issuer_endpoint: '{{ (hostvars[groups[''sso''][0]].scheme|default(''https'')) ~ ''://'' ~ hostvars[groups[''sso''][0]].client_id ~ '':'' ~ hostvars[groups[''sso''][0]].client_secret ~ ''@'' ~ groups[''sso''][0] ~ ''/auth/realms/'' ~ hostvars[groups[''sso''][0]].realm }}'
   when: 'threescale_cicd_sso_issuer_endpoint is not defined and ''sso'' in groups and groups[''sso''] > 0'
 
-- name: Set the threescale_cicd_sso_realm_endpoint variable from the inventory
+- name: Set the threescale_cicd_sso_realm_endpoint variable from the threescale_cicd_sso_issuer_endpoint
   set_fact:
-    threescale_cicd_sso_realm_endpoint: '{{ (hostvars[groups[''sso''][0]].scheme|default(''https'')) ~ ''://'' ~ groups[''sso''][0] ~ ''/auth/realms/'' ~ hostvars[groups[''sso''][0]].realm }}'
-  when: 'threescale_cicd_sso_realm_endpoint is not defined and ''sso'' in groups and groups[''sso''] > 0'
+    threescale_cicd_sso_realm_endpoint: '{{ (threescale_cicd_sso_issuer_endpoint|urlsplit(''scheme'')) ~ ''://'' ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''hostname'')) ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''path'')) }}'
+  when: 'threescale_cicd_sso_realm_endpoint is not defined and threescale_cicd_sso_issuer_endpoint is defined'
+
+- name: Set the threescale_cicd_sso_admin_endpoint variable from the threescale_cicd_sso_realm_endpoint
+  set_fact:
+    threescale_cicd_sso_admin_endpoint: '{{ threescale_cicd_sso_realm_endpoint|replace(''/auth/realms/'', ''/auth/admin/realms/'') }}'
+  when: 'threescale_cicd_sso_admin_endpoint is not defined'
 
 - name: Set the threescale_cicd_apicast_sandbox_endpoint variable from the inventory
   set_fact:
@@ -32,6 +37,7 @@
 
 # Load the API definition from the provided OpenAPI file
 - import_tasks: read_openapi_file.yml
+
 
 - name: Compute the service system_name
   set_fact:
@@ -75,6 +81,10 @@
 - set_fact:
     threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''auth_user_key'': threescale_cicd_api_security_scheme.name }) }}'
   when: 'threescale_cicd_api_security_scheme.type == ''apiKey'''
+
+- set_fact:
+    threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''oidc_issuer_endpoint'': threescale_cicd_sso_issuer_endpoint }) }}'
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
 
 - set_fact:
     threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''sandbox_endpoint'': threescale_cicd_apicast_sandbox_endpoint }) }}'

@@ -9,6 +9,7 @@ threescale_cicd_production_environment_name: production
 threescale_cicd_default_staging_suffix: -staging
 threescale_cicd_default_production_suffix: ""
 threescale_cicd_default_apicast_scheme: https
+threescale_cicd_openapi_smoketest_default_scope: openid
 threescale_cicd_default_oauth_scopes:
   openid: Any OpenID Connect token
 threescale_cicd_application_plans:

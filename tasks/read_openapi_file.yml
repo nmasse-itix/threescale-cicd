@@ -140,7 +140,7 @@
 
 - name: Find the correct backend_version to use
   set_fact:
-    threescale_cicd_api_backend_version: 'oauth'
+    threescale_cicd_api_backend_version: 'oidc'
   when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
 
 - name: Extract the backend hostname from OpenAPI

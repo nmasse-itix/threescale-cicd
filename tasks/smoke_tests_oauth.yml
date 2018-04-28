@@ -1,4 +1,36 @@
 ---
 
-- name: TODO
-  fail:
+- name: Prepare the OAuth Request to RH-SSO (static params)
+  set_fact:
+    threescale_cicd_tmp_body: ""
+
+- name: Prepare the OAuth Request to RH-SSO (urlencode dynamic params)
+  set_fact:
+    threescale_cicd_tmp_body: '{{ threescale_cicd_tmp_body ~ "&" ~ threescale_cicd_tmp_param.key ~ "=" ~ (threescale_cicd_tmp_param.value|urlencode) }}'
+  with_dict:
+    client_id: '{{ threescale_cicd_default_application_details.client_id }}'
+    client_secret: '{{ threescale_cicd_default_application_details.client_secret }}'
+    scope: '{{ threescale_cicd_openapi_smoketest_default_scope }}'
+    grant_type: client_credentials
+  loop_control:
+    loop_var: threescale_cicd_tmp_param
+
+- name: Authenticate to RH-SSO using the default application credentials
+  uri:
+    url: '{{ threescale_cicd_sso_realm_endpoint }}/protocol/openid-connect/token'
+    body: '{{ threescale_cicd_tmp_body }}'
+    method: POST
+    validate_certs: no
+    return_content: yes
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'
+  # temporary fix for https://github.com/ansible/ansible/issues/28078
+  until: 'threescale_cicd_tmpresponse|success'
+
+- name: Extract the access_token
+  set_fact:
+    threescale_cicd_openapi_smoketest_access_token: '{{ threescale_cicd_tmpresponse.json |json_query("access_token") }}'
+
+- set_fact:
+    threescale_cicd_openapi_smoketest_headers: "{{ threescale_cicd_openapi_smoketest_headers|combine({ 'Authorization': 'Bearer ' ~ threescale_cicd_openapi_smoketest_access_token }) }}"

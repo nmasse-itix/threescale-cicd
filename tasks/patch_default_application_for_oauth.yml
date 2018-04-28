@@ -1,0 +1,61 @@
+---
+
+- name: Prepare the OAuth Request to RH-SSO (static params)
+  set_fact:
+    threescale_cicd_tmp_body: ""
+
+- name: Prepare the OAuth Request to RH-SSO (urlencode dynamic params)
+  set_fact:
+    threescale_cicd_tmp_body: '{{ threescale_cicd_tmp_body ~ "&" ~ threescale_cicd_tmp_param.key ~ "=" ~ (threescale_cicd_tmp_param.value|urlencode) }}'
+  with_dict:
+    client_id: '{{ threescale_cicd_sso_issuer_endpoint|urlsplit(''username'') }}'
+    client_secret: '{{ threescale_cicd_sso_issuer_endpoint|urlsplit(''password'') }}'
+    scope: '{{ threescale_cicd_openapi_smoketest_default_scope }}'
+    grant_type: client_credentials
+  loop_control:
+    loop_var: threescale_cicd_tmp_param
+
+- name: Authenticate to RH-SSO using the 3scale service account
+  uri:
+    url: '{{ threescale_cicd_sso_realm_endpoint }}/protocol/openid-connect/token'
+    body: '{{ threescale_cicd_tmp_body }}'
+    method: POST
+    validate_certs: no
+    return_content: yes
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'
+  # temporary fix for https://github.com/ansible/ansible/issues/28078
+  until: 'threescale_cicd_tmpresponse|success'
+
+- name: Extract the access_token
+  set_fact:
+    threescale_cicd_openapi_tmp_access_token: '{{ threescale_cicd_tmpresponse.json |json_query("access_token") }}'
+
+- name: Wait for the new client to appear in RH-SSO
+  uri:
+    url: '{{ threescale_cicd_sso_admin_endpoint }}/clients?clientId={{ threescale_cicd_default_application_appid|urlencode }}'
+    method: GET
+    validate_certs: no
+    return_content: yes
+    headers:
+      Authorization: 'Bearer {{ threescale_cicd_openapi_tmp_access_token }}'
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'
+  until: 'threescale_cicd_tmpresponse|success and threescale_cicd_tmpresponse.json|length > 0'
+
+- set_fact:
+    threescale_cicd_default_application_sso_id: '{{ threescale_cicd_tmpresponse.json[0].id }}'
+    threescale_cicd_tmp_body: '{{ threescale_cicd_tmpresponse.json[0]|combine({ ''serviceAccountsEnabled'': true, ''standardFlowEnabled'': false, ''implicitFlowEnabled'': false, ''directAccessGrantsEnabled'': true }) }}'
+
+- name: Patch the client in RH-SSO to support the "client_credentials" and "password" grant_type.
+  uri:
+    url: '{{ threescale_cicd_sso_admin_endpoint }}/clients/{{ threescale_cicd_default_application_sso_id|urlencode }}'
+    method: PUT
+    validate_certs: no
+    body: '{{ threescale_cicd_tmp_body|to_json }}'
+    status_code: '200,204'
+    headers:
+      Authorization: 'Bearer {{ threescale_cicd_openapi_tmp_access_token }}'
+      Content-Type: 'application/json'

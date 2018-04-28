@@ -29,10 +29,12 @@
 
 - set_fact:
     threescale_cicd_tmp_search_criteria: 'app_id'
+    threescale_cicd_tmp_app_id_field: 'application_id'
   when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
 
 - set_fact:
     threescale_cicd_tmp_search_criteria: 'user_key'
+    threescale_cicd_tmp_app_id_field: 'user_key'
   when: 'threescale_cicd_api_security_scheme.type == ''apiKey'''
 
 - name: Check if the default application exists
@@ -49,7 +51,7 @@
   when: 'threescale_cicd_default_application_id is not defined and threescale_cicd_default_application_appid is defined and threescale_cicd_tmpresponse.status == 200'
 
 - set_fact:
-    threescale_cicd_tmp_body_update_method: '{{ "access_token=" ~ (threescale_cicd_access_token|urlencode) ~ "&plan_id=" ~ threescale_cicd_default_application_plan_id ~ "&name=" ~ (threescale_cicd_default_application_name|urlencode) ~ "&description=" ~ (threescale_cicd_default_application_description|urlencode) ~ "&" ~ threescale_cicd_tmp_search_criteria ~ "=" ~ (threescale_cicd_default_application_appid|urlencode) }}'
+    threescale_cicd_tmp_body_update_method: '{{ "access_token=" ~ (threescale_cicd_access_token|urlencode) ~ "&plan_id=" ~ threescale_cicd_default_application_plan_id ~ "&name=" ~ (threescale_cicd_default_application_name|urlencode) ~ "&description=" ~ (threescale_cicd_default_application_description|urlencode) ~ "&" ~ threescale_cicd_tmp_app_id_field ~ "=" ~ (threescale_cicd_default_application_appid|urlencode) }}'
 
 - name: Create the application
   uri:
@@ -78,3 +80,6 @@
 - set_fact:
     threescale_cicd_default_application_details: '{{ threescale_cicd_tmpresponse.json.application }}'
   when: 'threescale_cicd_default_application_id is defined'
+
+- include_tasks: patch_default_application_for_oauth.yml
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
