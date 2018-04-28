@@ -6,10 +6,11 @@ install:
 - pip install jmespath
 script:
 - ansible-playbook tests/write-inventory-files.yml
-- ansible-playbook -i tests/inventory tests/3scale-saas-with-hosted-apicast.yml
+- ansible-playbook -i tests/inventory tests/3scale-saas-with-hosted-apicast-apikey.yml
+- ansible-playbook -i tests/inventory tests/3scale-saas-with-hosted-apicast-oidc.yml
 env:
   global:
     # travis encrypt "THREESCALE_INVENTORY=$(yaml2json tests/3scale-inventory.yaml|base64)"
-    secure: "TjqtVqGqWneStstIfqlTDRvPPEF7UXQbVaBvR9/g7zDZuEyzui781I3jLlv8M72omLp1yUkEorAjbmBd7So2kIaS5kl9MkqyEaG5JonPMbhBxyos47hyQlKQ9OB31UZZaQFmurOamO/aa22zEw1w3sfjqKqn+U1fYxtEg3262TMjYx3rbgRhqNYEN35hO1VpUw6elRddyrirCTV66nyfE7GQ/PIhejnruPolCGVo/h+WInIBhEz5/BUb2vRCtGn5OhHH+WdIvAp8W2adB55hRfenPTSg7qQnrCyPFgSXkeFUL0H0xc6J/n2+cch9oDRzHoANyTeb0rmdbN/bvGN3bLrojYLGuZbIK6cjmpo14wJmUaPmxzL91z/IHszAqz5f1PlfGz2J+KVcoJf4R3/91ReuQFYClrz8Wf/RlSV2yqkknk34aCr03TWhSENwVRoP1pcO96emGC2mmX+Br0DzCLK9HWsyk1yQfC4YzxU0tjqYshLLcW5olxa7kU0Wn2L3Ju+F8pTnkKCSEsdHLDGKTHlzhQVhq1gvhspC2LZGr+3zyU5vCQ53PxUNusGzRRRMbNKr/VOB1xc/+CabRUGM42GZKKCz7wGkZPmPfeMe7NCcyRPvAQSP3PupQB+PbgOgOfC8vhHXGViPix7cd2WSwLTJ1yT1jgxBvjP7TTnRS1k="
+    secure: "YKSBZJonKq/RwBtrg1wrlbw9GUaQhY0LmbUpShIPMeD1DqLQtOz9OIijAP2Uvtnn5F8josyzyYeZoRz4HOWT6DNdbZoclIT86FdT9yp9pIBuKYqaGOMmdwhTl+BXudeTCAvuj4k6eNux24WY+AqWZoXgr4E0rRJQJyD/G7gn4CMDQmn+an+RK43nhkXgMYNm6SHbR3c3wBypdWJivfgvdBfJb2VY8Q3XXQNh+ivUNW5us4Sf+G+UsjbQKeTF6G1rz8FUxGc2tElWcc+6fXWDTWI1WkZVfNm7f6cGii7X22OBDgOkoUjUKeVj/vmpgp7uOSk3XiWIC+gNsT/cS9/6XzZCnfhGmPal3QP5hXnsP5gBfKYzy8zZEp9H8NLyGA8K7M0cZGuFDdxg0HnIyXNnn7Denjyt3TopFR9ENsNOEbBar8XEb4oZicRWrXC9O/Sse4rCm5vGffXt+lcoAuypmxhASDZKNKsQRXhG+JRMZ2ONB8QOdH22mQ+JEOhOFNtiY2O9eEQOdtU92B9vWYWOztSGZ8/+AQ729bCzOw7AfxtxUyYadFnEdibAeWsl+xnlAdwmo0sNoCTGBKFMXlyP/gmcE7NdCLqWS6MSM2u4ARuQt7IS29wwlRseaMUli69vp0SqvjT6lelx4bonLFi74treKIQVLoxqSQaiU7KVTr0="
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/

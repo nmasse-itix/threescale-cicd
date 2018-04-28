@@ -1,0 +1,37 @@
+swagger: '2.0'
+info:
+  x-threescale-system-name: 'echo-api-oidc'
+  title: 'Echo API'
+  description: 'A very simple API.'
+  contact:
+    name: 'Nicolas MASSE'
+    url: 'http://github.com/nmasse-itix'
+    email: nmasse@redhat.com
+  license:
+    name: 'MIT License'
+    url: 'https://opensource.org/licenses/MIT'
+  version: '1.0'
+host: 'echo-api.3scale.net'
+schemes:
+- http
+paths:
+  /:
+    get:
+      operationId: Echo
+      tags:
+        - echo
+      summary: 'Get an echo'
+      description: 'Get an echo from the server'
+      x-threescale-smoketests-operation: true
+      responses:
+        200:
+          description: 'An Echo from the server'
+security:
+- oidc:
+  - openid
+securityDefinitions:
+  oidc:
+    type: oauth2
+    flow: accessCode
+    scopes:
+      openid: Get an OpenID Connect token

@@ -7,8 +7,8 @@
     threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api.yaml'
   roles:
   # Test first deployment
-  - { name: 'nmasse-itix.threescale-cicd', vars: { 'round': 1 } }
+  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 1 } }
   # Verify idempotence
-  - { name: 'nmasse-itix.threescale-cicd', vars: { 'round': 2 } }
+  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 2 } }
   post_tasks:
   - import_tasks: 'cleanup.yaml'
