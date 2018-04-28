@@ -23,7 +23,7 @@
 - name: Set the threescale_cicd_sso_admin_endpoint variable from the threescale_cicd_sso_realm_endpoint
   set_fact:
     threescale_cicd_sso_admin_endpoint: '{{ threescale_cicd_sso_realm_endpoint|replace(''/auth/realms/'', ''/auth/admin/realms/'') }}'
-  when: 'threescale_cicd_sso_admin_endpoint is not defined'
+  when: 'threescale_cicd_sso_admin_endpoint is not defined and threescale_cicd_sso_realm_endpoint is defined'
 
 - name: Set the threescale_cicd_apicast_sandbox_endpoint variable from the inventory
   set_fact:
