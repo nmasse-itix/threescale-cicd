@@ -41,3 +41,7 @@
     threescale_cicd_existing_metrics: '{{ threescale_cicd_existing_metrics|union([ threescale_cicd_tmp_operation.key ]) }}'
     threescale_cicd_existing_metrics_details: '{{ threescale_cicd_existing_metrics_details|union([ { "system_name": threescale_cicd_tmp_operation.key, "id": threescale_cicd_tmpresponse.json|json_query("method.id") } ]) }}'
   when: 'threescale_cicd_tmp_operation.key not in threescale_cicd_existing_metrics'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

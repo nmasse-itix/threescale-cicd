@@ -19,3 +19,7 @@
   with_items: '{{ threescale_cicd_tmp_metrics_to_delete }}'
   loop_control:
     loop_var: threescale_cicd_tmp_metric
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

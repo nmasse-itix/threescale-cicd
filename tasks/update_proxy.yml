@@ -17,3 +17,7 @@
     body: '{{ threescale_cicd_tmp_body_update_proxy }}'
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

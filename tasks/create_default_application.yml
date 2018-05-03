@@ -83,3 +83,7 @@
 
 - include_tasks: patch_default_application_for_oauth.yml
   when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

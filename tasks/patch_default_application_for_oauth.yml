@@ -59,3 +59,7 @@
     headers:
       Authorization: 'Bearer {{ threescale_cicd_openapi_tmp_access_token }}'
       Content-Type: 'application/json'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

@@ -36,3 +36,7 @@
     method: POST
   register: threescale_cicd_tmpresponse
   when: 'threescale_cicd_tmp_staging_proxy_version != threescale_cicd_tmp_production_proxy_version'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

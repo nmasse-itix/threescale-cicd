@@ -32,3 +32,7 @@
     threescale_cicd_existing_application_plans: '{{ threescale_cicd_existing_application_plans|union([ threescale_cicd_tmp_plan.system_name ]) }}'
     threescale_cicd_existing_application_plans_details: '{{ threescale_cicd_existing_application_plans_details|union([{ "system_name": threescale_cicd_tmp_plan.system_name, "id": threescale_cicd_tmpresponse.json.application_plan.id }]) }}'
   when: 'threescale_cicd_tmp_plan.system_name not in threescale_cicd_existing_application_plans'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

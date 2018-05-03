@@ -99,6 +99,10 @@
   changed_when: 'threescale_cicd_tmpresponse.status == 201'
   when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_activedocs'
 
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'
+
 - set_fact:
     threescale_cicd_api_activedocs_id: '{{ threescale_cicd_tmpresponse.json.api_doc.id }}'
   when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_activedocs'

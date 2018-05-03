@@ -52,3 +52,7 @@
     threescale_cicd_existing_services: '{{ threescale_cicd_existing_services|union([ threescale_cicd_tmpresponse.json.service.system_name ]) }}'
     threescale_cicd_existing_services_details: '{{ threescale_cicd_existing_services_details|union([ { ''id'': threescale_cicd_tmpresponse.json.service.id, ''system_name'': threescale_cicd_tmpresponse.json.service.system_name } ]) }}'
   when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_services'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

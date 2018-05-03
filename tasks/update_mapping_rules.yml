@@ -53,3 +53,7 @@
   with_items: '{{ threescale_cicd_tmp_mapping_rules_to_delete }}'
   loop_control:
     loop_var: threescale_cicd_tmp_mapping_rule_to_delete
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'
