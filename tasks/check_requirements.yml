@@ -1,5 +1,10 @@
 ---
 
+- name: Verify that Ansible version is >= 2.4
+  assert:
+    that: "ansible_version.full is version_compare('2.4', '>=')"
+    msg: This module requires at least Ansible 2.4
+
 - name: Check if jmespath is installed locally
   debug: msg={{dummy|json_query('@')}}
   register: check_jmespath
