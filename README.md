@@ -20,14 +20,14 @@ you can install it with:
 pip install jmespath
 ```
 
-A recent version of Jinja (2.8) is also required. You can install it with:
+A recent version of Jinja (2.8) is also required. You can upgrade your Jinja version with:
 ```
-pip install jinja2
+pip install -U Jinja2
 ```
 
-If your control node runs on RHEL7, you can run 
+If your control node runs on RHEL7, you can run
 [this playbook](https://github.com/nmasse-itix/OpenShift-Lab/blob/master/common/verify-local-requirements.yml)
-to install the missing dependencies. 
+to install the missing dependencies.
 
 ## Example: Deploy an API on 3scale SaaS with hosted APIcast gateways
 

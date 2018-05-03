@@ -1,0 +1,27 @@
+---
+
+- name: Check if jmespath is installed locally
+  debug: msg={{dummy|json_query('@')}}
+  register: check_jmespath
+  ignore_errors: yes
+  vars:
+    dummy: Hello World
+
+- name: Check if jinja 2.8 is installed locally
+  debug: msg={{(dummy|selectattr("id", "equalto", "hello")|first)['value']}}
+  vars:
+    dummy:
+    - id: hello
+      value: Hello World
+  register: check_jinja28
+  ignore_errors: yes
+
+- assert:
+    that:
+    - 'check_jmespath is success'
+    msg: "The JMESPath library is required by this role. Please install the JMESPath library with 'pip install jmespath'."
+
+- assert:
+    that:
+    - 'check_jinja28 is success'
+    msg: "At least Jinja v2.8 is required by this role. Please update Jinja with 'pip install -U Jinja2'."

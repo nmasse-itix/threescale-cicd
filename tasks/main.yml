@@ -1,5 +1,7 @@
 ---
 
+- import_tasks: check_requirements.yml
+
 - name: Ensure pre-requisites are met
   assert:
     that:
