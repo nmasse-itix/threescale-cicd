@@ -130,3 +130,9 @@ MIT
 ## Author Information
 
 - Nicolas Massé, Red Hat
+
+[mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
+[mit-link]: https://raw.githubusercontent.com/nmasse-itix/threescale-cicd/master/LICENSE
+[role-badge]: https://img.shields.io/badge/role-threescale--cicd-green.svg
+[galaxy-link]: https://galaxy.ansible.com/nmasse-itix/threescale-cicd/
+
