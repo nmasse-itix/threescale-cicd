@@ -8,6 +8,7 @@ script:
 - ansible-playbook tests/write-inventory-files.yml
 - ansible-playbook -i tests/inventory tests/3scale-saas-with-hosted-apicast-apikey.yml
 - ansible-playbook -i tests/inventory tests/3scale-saas-with-hosted-apicast-oidc.yml
+- ansible-playbook -i tests/inventory tests/3scale-saas-with-hosted-apicast-with-basePath.yml
 env:
   global:
     # travis encrypt "THREESCALE_INVENTORY=$(yaml2json tests/3scale-inventory.yaml|base64)"
