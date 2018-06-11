@@ -1,6 +1,8 @@
 # ansible-cicd
 
 [![Build Status](https://travis-ci.org/nmasse-itix/threescale-cicd.svg?branch=master)](https://travis-ci.org/nmasse-itix/threescale-cicd)
+[![MIT licensed][mit-badge]][mit-link]
+[![Galaxy Role][role-badge]][galaxy-link]
 
 Enables Continuous Delivery with Red Hat 3scale API Management Platform (3scale AMP).
 
@@ -123,8 +125,14 @@ This role has no dependencies.
 
 ## License
 
-BSD
+MIT
 
 ## Author Information
 
 - Nicolas Massé, Red Hat
+
+[mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
+[mit-link]: https://raw.githubusercontent.com/nmasse-itix/threescale-cicd/master/LICENSE
+[role-badge]: https://img.shields.io/badge/role-threescale--cicd-green.svg
+[galaxy-link]: https://galaxy.ansible.com/nmasse-itix/threescale-cicd/
+
