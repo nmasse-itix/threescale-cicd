@@ -185,5 +185,5 @@
   when: 'threescale_cicd_openapi_smoketest_operation is defined and threescale_cicd_openapi_smoketest_operation|length > 0'
 
 - set_fact:
-    threescale_cicd_openapi_smoketest_path: '{{ threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].path }}'
+    threescale_cicd_openapi_smoketest_path: '{{ threescale_cicd_api_basepath }}{{ threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].path }}'
   when: 'threescale_cicd_openapi_smoketest_operation is defined and threescale_cicd_openapi_smoketest_operation|length > 0'

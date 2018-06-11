@@ -1,0 +1,14 @@
+---
+
+- name: Deploy the Echo API to a 3scale SaaS instance, with hosted APIcasts
+  hosts: threescale
+  gather_facts: no
+  vars:
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api-with-basePath.yaml'
+  roles:
+  # Test first deployment
+  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 1 } }
+  # Verify idempotence
+  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 2 } }
+  post_tasks:
+  - import_tasks: 'cleanup.yaml'

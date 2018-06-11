@@ -13,7 +13,7 @@
 
 - name: Build a list of our expected/wanted mapping rules
   set_fact:
-    threescale_cicd_tmp_wanted_mapping_rules: '{{ threescale_cicd_tmp_wanted_mapping_rules|combine({ threescale_cicd_tmp_operation.key: { "http_method": threescale_cicd_tmp_operation.value.verb.upper(), "pattern": threescale_cicd_tmp_operation.value.path ~ "$", "delta": 1 } }) }}'
+    threescale_cicd_tmp_wanted_mapping_rules: '{{ threescale_cicd_tmp_wanted_mapping_rules|combine({ threescale_cicd_tmp_operation.key: { "http_method": threescale_cicd_tmp_operation.value.verb.upper(), "pattern": threescale_cicd_api_basepath ~ threescale_cicd_tmp_operation.value.path ~ "$", "delta": 1 } }) }}'
   with_dict: '{{ threescale_cicd_api_operations }}'
   loop_control:
     loop_var: threescale_cicd_tmp_operation
