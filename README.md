@@ -496,7 +496,7 @@ If you want to use this role in Ansible Tower, the easiest way to do so is:
 
 - to have an inventory for each of your environments (dev, test, prod, etc.)
 - in those inventories, define a group (let's say `threescale`) containing
-  your 3scale Admin Portal(s)
+  the 3scale Admin Portal(s) of this environment
 - set all the variables that depends on the environment (`threescale_cicd_wildcard_domain`, `threescale_cicd_api_environment_name`, etc.) as
   group variables
 - create a playbook, committed in your GIT repository and reference it as a Project
