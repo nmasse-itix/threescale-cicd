@@ -484,7 +484,11 @@ provide sensible defaults. Have a look at them.
 
 ## Dependencies
 
-This role has no dependencies.
+This role has no dependencies on other roles, but it has dependencies on:
+
+- Ansible (at least version 2.4)
+- JMESPath
+- Jinja (at least version 2.8)
 
 ## License
 
