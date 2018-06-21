@@ -96,14 +96,14 @@
     threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''endpoint'': threescale_cicd_apicast_production_endpoint }) }}'
   when: 'threescale_cicd_apicast_production_endpoint is defined'
 
-# Update the proxy
-- import_tasks: update_proxy.yml
-
 # Update the metrics
 - import_tasks: update_metrics.yml
 
 # Update the mapping rules
 - import_tasks: update_mapping_rules.yml
+
+# Update the proxy
+- import_tasks: update_proxy.yml
 
 - name: Get the list of existing application plans
   uri:
