@@ -227,7 +227,7 @@ The following extended fields of the OpenAPI Specifications can be used:
 - `x-threescale-system-name`, in the `info` structure is used as basis
   to construct the system_name for the configuration objects in 3scale.
 - `x-threescale-smoketests-operation` in a method definition is used to flag
-  one operation as usable for smoke tests. The method needs to be idempotent,
+  this operation as usable for smoke tests. The method needs to be idempotent,
   read-only and without parameters. If no method is flagged as smoke tests,
   the smoke tests are just skipped.
 
@@ -357,48 +357,49 @@ that sensible defaults and opinionated naming schemes are provided out-of-the-bo
 
 Specifies the OpenAPI Specification file to read.
 
-- Syntax: Complete path to the OpenAPI Specification, on the local filesystem.
+- **Syntax:** Complete path to the OpenAPI Specification, on the local filesystem.
   Avoid relative paths, prefer absolute ones. If you need to read a file that is
   relative to your playbook, use the `{{ playbook_dir }}` placeholder.
-- Required: yes
-- Example: `/tmp/openapi.yaml`
+- **Required:** yes
+- **Examples:** `/tmp/openapi.yaml` or `{{ playbook_dir }}/git/openapi.json`
 
 ### `threescale_cicd_openapi_file_format`
 
 Specifies the format (JSON or YAML) of the OpenAPI Specification file to read.
 
-- Syntax: `JSON` or `YAML`
-- Required: yes
-- Example: `YAML`
+- **Syntax:** `JSON` or `YAML`
+- **Required:** no
+- **Default value:** `YAML`
+- **Example:** `YAML`
 
 ### `threescale_cicd_api_system_name`
 
 Defines the system_name of the 3scale Service that will be provisioned.
 
-- Syntax: lower case alphanumeric + underscore
-- Required: no
-- Default value: if not defined, the system_name is taken from the OpenAPI
+- **Syntax:** lower case alphanumeric + underscore
+- **Required:** no
+- **Default value:** if not defined, the system_name is taken from the OpenAPI
   Specification `x-threescale-system-name` extended field, suffixed by the
-  API major version number. If there is no `x-threescale-system-name`
-  extended field can be found, the `title` field is sanitized and then used.
+  API major version number. If no `x-threescale-system-name` extended field
+  can be found, the `title` field is sanitized and then used.
   If no title can be found, the default value `API` is used. If no version
   number can be found, `0` is used.
-- Example: `my_wonderful_service`
+- **Example:** `my_wonderful_service`
 
 ### `threescale_cicd_wildcard_domain`
 
 Automatically defines the APIcast public URLs based on a scheme.
 
-- Syntax: DNS domain suffix
-- Required: no
-- Default value: if defined, computes the `threescale_cicd_apicast_sandbox_endpoint`
+- **Syntax:** DNS domain suffix
+- **Required:** no
+- **Default value:** if defined, computes the `threescale_cicd_apicast_sandbox_endpoint`
   and `threescale_cicd_apicast_production_endpoint` from the API system_name.
   The sandbox APIcast will be `<system_name>-staging.<wildcard_domain>` and the
   production APIcast will be `<system_name>.<wildcard_domain>`. The suffix for the
   staging (`-staging`) and the production (empty) can be customized with the
   `threescale_cicd_default_staging_suffix` and `threescale_cicd_default_production_suffix`
   variables.
-- Example: the following two variables
+- **Example:** the following two variables
 
   ```ini
   threescale_cicd_wildcard_domain=acme.corp
@@ -418,10 +419,10 @@ Defines the backend hostname, overriding the `host` field of the OpenAPI Specifi
 The resulting value is used to define the `threescale_cicd_private_base_url` variable
 if missing.
 
-- Syntax: FQDN with an optional port
-- Required: no
-- Default value: the `host` field of the OpenAPI Specification.
-- Examples: `mybackend.acme.corp` or `mybackend.acme.corp:8080`
+- **Syntax:** FQDN with an optional port
+- **Required:** no
+- **Default value:** the `host` field of the OpenAPI Specification.
+- **Examples:** `mybackend.acme.corp` or `mybackend.acme.corp:8080`
 
 ### `threescale_cicd_api_backend_scheme`
 
@@ -429,41 +430,46 @@ Defines the scheme to use to connect to the backend, overriding the `schemes` fi
 The resulting value is used to define the `threescale_cicd_private_base_url` variable
 if missing.
 
-- Syntax: `http` or `https`
-- Required: no
-- Default value: the first item of the `scheme` field of the OpenAPI Specification,
+- **Syntax:** `http` or `https`
+- **Required:** no
+- **Default value:** the first item of the `scheme` field of the OpenAPI Specification,
   defaulting to `http` if missing.
-- Examples: `https`
+- **Example:** `https`
 
 ### `threescale_cicd_private_base_url`
 
 Defines the 3scale Private Base URL.
 
-- Syntax: `<schem>://<host>:<port>`
-- Required: no
-- Default value: `<threescale_cicd_api_backend_scheme>://<threescale_cicd_api_backend_hostname>`
-- Examples: `http://mybackend.acme.corp:8080`
+- **Syntax:** `<schem>://<host>:<port>`
+- **Required:** no
+- **Default value:** `<threescale_cicd_api_backend_scheme>://<threescale_cicd_api_backend_hostname>`
+- **Example:** `http://mybackend.acme.corp:8080`
 
 ### `threescale_cicd_openapi_smoketest_operation`
 
 Defines the OpenAPI Specification method to use for smoke tests.
 
-- Syntax: the `operationId` of the OpenAPI Specification method
-- Required: no
-- Default value: none. If this variable is undefined and if there is no operation
-  flagged with `x-threescale-system-name` in the OpenAPI Specification, the
+- **Syntax:** the `operationId` of the OpenAPI Specification method
+- **Required:** no
+- **Default value:** none. If this variable is undefined and if there is no operation
+  flagged with `x-threescale-smoketests-operation` in the OpenAPI Specification, the
   smoke tests are skipped.
-- Examples: `http://mybackend.acme.corp:8080`
+- **Example:** `GetName`
 
 ### `threescale_cicd_api_environment_name`
 
-Prefix all services with an environment name to prevent any name collision
+Prefixes all services with an environment name to prevent any name collision
 when deploying the same API multiple times on the same 3scale instance.
 
-- Syntax: lowercase, alphanumeric + underscore
-- Required: no
-- Default value: none, no prefixing is performed.
-- Examples: `dev`, `test` or `prod`
+- **Syntax:** lowercase, alphanumeric + underscore
+- **Required:** no
+- **Default value:** none, no prefixing is performed.
+- **Examples:** `dev`, `test` or `prod`
+
+### Miscellaneous variables
+
+Miscellaneous variables defined in [defaults/main.yml](defaults/main.yml])
+provide sensible defaults. Have a look at them.
 
 ## Dependencies
 
