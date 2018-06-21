@@ -9,21 +9,24 @@ Enables Continuous Delivery with Red Hat 3scale API Management Platform (3scale 
 ## Requirements
 
 This role requires:
- - an instance of 3scale API Management Platform (hosted or on-premise)
- - an instance of Red Hat SSO if you plan to use OpenID Connect authentication
- - two APIcast gateways (staging and production), either hosted or self-managed
- - a Swagger 2.0 file describing the API you want to publish
+
+- an instance of 3scale API Management Platform (hosted or on-premise)
+- an instance of Red Hat SSO if you plan to use OpenID Connect authentication
+- two APIcast gateways (staging and production), either hosted or self-managed
+- a Swagger 2.0 file describing the API you want to publish
 
 All the components are driven through APIs, so no SSH connection is required!
 
 On the control node, the `jmespath` library is required. If it is not already there,
 you can install it with:
-```
+
+```sh
 pip install jmespath
 ```
 
 A recent version of Jinja (2.8) is also required. You can upgrade your Jinja version with:
-```
+
+```sh
 pip install -U Jinja2
 ```
 
@@ -35,13 +38,15 @@ to install the missing dependencies.
 
 If you want to deploy the classic "Echo API" on a SaaS 3scale instance using API Keys,
 you can do it in three steps:
+
  1. Craft a Swagger file for your Echo API
  2. Build your inventory file
  3. Write the playbook
  4. Run the playbook!
 
 First, make sure your swagger file (`api-swagger.yaml`) has the required information:
-```
+
+```yaml
 swagger: '2.0'
 info:
   x-threescale-system-name: 'echo-api'
@@ -68,6 +73,7 @@ securityDefinitions:
 ```
 
 In this Swagger file, the following fields are used:
+
 - `x-threescale-system-name` is used as system_name for the configuration objects in 3scale.
 - `title` is used as the name of the service definition.
 - `version` is used for proper versioning and follows the [semver scheme](https://semver.org/).
@@ -78,7 +84,8 @@ In this Swagger file, the following fields are used:
 - the `security` and `securityDefinitions` are used to determine the security scheme of the exposed API. In this example, we are using the API Keys scheme.
 
 Then, write the `inventory` file:
-```
+
+```ini
 [all:vars]
 ansible_connection=local
 
@@ -90,12 +97,14 @@ threescale_cicd_access_token=<ACCESS_TOKEN>
 ```
 
 The important bits of the inventory file are:
+
 - the 3scale admin portal needs to be declared in a group named `threescale`.
 - the [3scale access token](https://access.redhat.com/documentation/en-us/red_hat_3scale/2.saas/html-single/accounts/index#access_tokens) needs to be set in the `threescale_cicd_access_token` variable.
 - since no SSH connection is needed (we only use the 3scale Admin APIs), `ansible_connection=local` is set to the whole inventory.
 
 You can now write the playbook (`deploy-api.yaml`):
-```
+
+```yaml
 - hosts: threescale
   gather_facts: no
   vars:
@@ -105,12 +114,14 @@ You can now write the playbook (`deploy-api.yaml`):
 ```
 
 The main parts are:
+
 - `threescale_cicd_openapi_file` is the path to the swagger file defined in step 1.
 - the `nmasse-itix.threescale-cicd` role is used.
 - `gather_facts: no` needs to be used since there is no SSH connection to the target systems.
 
 Finally, you can run the playbook:
-```
+
+```sh
 ansible-galaxy install nmasse-itix.threescale-cicd
 ansible-playbook -i inventory deploy-api.yaml
 ```
@@ -487,4 +498,3 @@ MIT
 [mit-link]: https://raw.githubusercontent.com/nmasse-itix/threescale-cicd/master/LICENSE
 [role-badge]: https://img.shields.io/badge/role-threescale--cicd-green.svg
 [galaxy-link]: https://galaxy.ansible.com/nmasse-itix/threescale-cicd/
-
