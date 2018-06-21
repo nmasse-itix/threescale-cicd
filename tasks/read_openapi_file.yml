@@ -156,13 +156,12 @@
 - name: Compute the private base url from the OpenAPI file
   set_fact:
     threescale_cicd_private_base_url: '{{ threescale_cicd_api_backend_scheme ~ ''://'' ~ threescale_cicd_api_backend_hostname }}'
-  when: 'threescale_cicd_private_base_url is not defined'
+  when: threescale_cicd_api_backend_hostname is defined and threescale_cicd_private_base_url is not defined
 
 - assert:
     that:
-    - 'threescale_cicd_api_backend_scheme is defined'
-    - 'threescale_cicd_api_backend_hostname is defined'
-    msg: 'The backend hostname and scheme must either be in the swagger or declared as extra variables (threescale_cicd_api_backend_scheme / threescale_cicd_api_backend_hostname)'
+    - 'threescale_cicd_private_base_url is defined'
+    msg: 'Either the private base url or the tuple backend hostname/scheme must be declared as extra variables (either threescale_cicd_private_base_url or threescale_cicd_api_backend_scheme / threescale_cicd_api_backend_hostname)'
 
 - name: Find the smoke-test flagged operation
   set_fact:
