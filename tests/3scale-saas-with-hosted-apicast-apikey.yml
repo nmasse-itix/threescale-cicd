@@ -1,10 +1,13 @@
 ---
 
-- name: Deploy the Echo API to a 3scale SaaS instance, with hosted APIcasts
+- name: Deploy the Beer Catalog API to a 3scale SaaS instance, with hosted APIcasts
   hosts: threescale
   gather_facts: no
   vars:
-    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api.yaml'
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/beer-catalog-api.json'
+    threescale_cicd_openapi_file_format: 'JSON'
+    threescale_cicd_api_backend_hostname: echo-api.3scale.net
+    threescale_cicd_openapi_smoketest_operation: GET_beer
   roles:
   # Test first deployment
   - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 1 } }
