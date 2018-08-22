@@ -3,8 +3,6 @@ threescale_cicd_openapi_file_format: YAML
 threescale_cicd_delay: 10
 threescale_cicd_retries: 50
 threescale_cicd_throttling: 2
-threescale_cicd_default_application_name: 'Ansible smoke-tests default application'
-threescale_cicd_default_application_description: 'This app is used to run smoke tests during the deployment phase. It will be automatically recreated if you delete it.'
 threescale_cicd_staging_environment_name: sandbox
 threescale_cicd_production_environment_name: production
 threescale_cicd_default_staging_suffix: -staging
@@ -18,3 +16,21 @@ threescale_cicd_application_plans:
   default: false
   state: hidden
   name: Ansible Test Plan
+
+# Specifies that APIcast is self managed (if a public staging and/or
+# production URL is given), or hosted
+threescale_cicd_api_deployment_type: '{{ ''self_managed'' if threescale_cicd_apicast_sandbox_endpoint is defined or threescale_cicd_apicast_production_endpoint is defined else ''hosted'' }}'
+
+##
+## Default Application (used for Smoke Tests)
+##
+threescale_cicd_default_application_name: 'Ansible smoke-tests default application'
+threescale_cicd_default_application_description: 'This app is used to run smoke tests during the deployment phase. It will be automatically recreated if you delete it.'
+
+# The application plan to pick for the default application (the one used for
+# smoke tests)
+threescale_cicd_default_application_plan: '{{ (threescale_cicd_application_plans|first).system_name }}'
+
+# Compute the default application's appid. By default, we are using a combination
+# of app, api and environment data, hashed toghether to produce a stable id.
+threescale_cicd_default_application_appid: '{{ (threescale_cicd_default_application_name ~ threescale_cicd_api_system_name ~ threescale_cicd_access_token)|hash(''sha1'') }}'

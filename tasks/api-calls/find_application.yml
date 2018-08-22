@@ -1,0 +1,13 @@
+---
+
+- name: Check if the default application exists
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/applications/find.json?{{ threescale_cicd_find_application_payload }}'
+    validate_certs: no
+    method: GET
+    status_code: 200,404
+  register: threescale_cicd_tmpresponse
+
+- set_fact:
+    threescale_cicd_default_application_id: '{{ threescale_cicd_tmpresponse.json.application.id }}'
+  when: 'threescale_cicd_tmpresponse.status == 200'

@@ -1,0 +1,9 @@
+{% 
+  set payload = [ 
+    'access_token=' ~ threescale_cicd_access_token|urlencode
+  ]
+%}
+{% for key, value in threescale_cicd_application_plan.items() %}
+{% do payload.append(key ~ "=" ~ value|urlencode) %}
+{% endfor %}
+{{ payload|join("&") }}

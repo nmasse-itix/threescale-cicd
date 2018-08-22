@@ -1,0 +1,20 @@
+---
+
+- debug: 
+    var: threescale_cicd_smoke_test_headers
+    verbosity: 1
+
+- debug:
+    msg: "Starting a smoke test on '{{ threescale_cicd_smoke_test_url }}'..."
+
+- name: Running smoke tests !
+  uri:
+    url: '{{ threescale_cicd_smoke_test_url }}'
+    headers: '{{ threescale_cicd_smoke_test_headers }}'
+    validate_certs: no
+    method: GET
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'
+  # temporary fix for https://github.com/ansible/ansible/issues/28078
+  until: 'threescale_cicd_tmpresponse is success'

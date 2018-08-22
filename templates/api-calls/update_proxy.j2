@@ -1,0 +1,20 @@
+{% 
+  set payload = [ 
+    'access_token=' ~ threescale_cicd_access_token|urlencode,
+    'credentials_location=' ~ threescale_cicd_api_credentials_location|urlencode,
+    'api_backend=' ~ threescale_cicd_private_base_url|urlencode
+  ]
+%}
+{% if threescale_cicd_api_security_scheme.type == 'apiKey' %}
+{% do payload.append('auth_user_key=' ~ threescale_cicd_api_security_scheme.name|urlencode) %}
+{% endif %}
+{% if threescale_cicd_api_security_scheme.type == 'oauth2' %}
+{% do payload.append('oidc_issuer_endpoint=' ~ threescale_cicd_sso_issuer_endpoint|urlencode) %}
+{% endif %}
+{% if threescale_cicd_apicast_sandbox_endpoint is defined %}
+{% do payload.append('sandbox_endpoint=' ~ threescale_cicd_apicast_sandbox_endpoint|urlencode) %}
+{% endif %}
+{% if threescale_cicd_apicast_production_endpoint is defined %}
+{% do payload.append('endpoint=' ~ threescale_cicd_apicast_production_endpoint|urlencode) %}
+{% endif %}
+{{ payload|join("&") }}

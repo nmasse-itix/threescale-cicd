@@ -1,0 +1,10 @@
+{% 
+  set payload = [ 
+    'access_token=' ~ threescale_cicd_access_token|urlencode,
+    'metric_id=' ~ ((threescale_cicd_existing_metrics_details|selectattr("system_name", "equalto", threescale_cicd_mapping_rule)|first).id|urlencode)
+  ]
+%}
+{% for key, value in threescale_cicd_wanted_mapping_rules[threescale_cicd_mapping_rule].items() %}
+{% do payload.append(key ~ "=" ~ value|urlencode) %}
+{% endfor %}
+{{ payload|join("&") }}

@@ -1,0 +1,63 @@
+---
+# Credentials are expected to be passed in HTTP headers unless stated otherwise
+# and only for API Keys
+threescale_cicd_api_credentials_location: '{{ ''headers'' if threescale_cicd_api_security_scheme.in|default(''header'') == ''header'' or threescale_cicd_api_security_scheme.type == ''oauth2'' else ''query'' }}'
+
+# A list of unused metrics to delete
+threescale_cicd_metrics_to_delete: '{{ lookup(''template'', ''metrics_to_delete.j2'') }}'
+
+# The OpenAPI file to be pushed to 3scale as an ActiveDocs
+threescale_cicd_openapi_rewritten: '{{ lookup(''template'', ''rewritten_openapi.j2'') }}'
+
+##
+## ID Lookup Variables
+##
+
+# The id of the current service is fetched from the threescale_cicd_existing_services_details fact
+threescale_cicd_api_service_id: '{{ (threescale_cicd_existing_services_details|selectattr(''system_name'', ''equalto'', threescale_cicd_api_system_name)|first)[''id''] }}'
+
+# The id of the 'hits' metric is fetched from the threescale_cicd_existing_metrics_details fact
+threescale_cicd_metric_id: '{{ (threescale_cicd_existing_metrics_details|selectattr(''system_name'', ''equalto'', ''hits'')|first).id }}'
+
+# Find the default application plan id from its system name
+threescale_cicd_default_application_plan_id: '{{ (threescale_cicd_existing_application_plans_details|selectattr("system_name", "equalto", threescale_cicd_default_application_plan)|first).id }}'
+
+# Find the id of the existing activedocs from the threescale_cicd_existing_activedocs_details fact
+threescale_cicd_api_activedocs_id: '{{ (threescale_cicd_existing_activedocs_details|selectattr(''system_name'', ''equalto'', threescale_cicd_api_system_name)|first).id }}'
+
+##
+## Mapping Rules computation
+##
+# what we want
+threescale_cicd_wanted_mapping_rules: '{{ lookup(''template'', ''wanted_mapping_rules.j2'') }}'
+# what we have
+threescale_cicd_existing_mapping_rules: '{{ lookup(''template'', ''existing_mapping_rules.j2'') }}'
+# create the items that we want but don't have yet
+threescale_cicd_mapping_rules_to_create: '{{ threescale_cicd_wanted_mapping_rules.keys()|difference(threescale_cicd_existing_mapping_rules.keys()) }}'
+# delete the items that we don't want but we have
+threescale_cicd_mapping_rules_to_delete: '{{ threescale_cicd_existing_mapping_rules.keys()|difference(threescale_cicd_wanted_mapping_rules.keys()) }}'
+# update the items that we want and we have
+threescale_cicd_mapping_rules_to_update: '{{ threescale_cicd_existing_mapping_rules.keys()|intersect(threescale_cicd_wanted_mapping_rules.keys()) }}'
+
+##
+## 3scale API Payload definition
+##
+threescale_cicd_update_proxy_payload: '{{ lookup(''template'', ''api-calls/update_proxy.j2'') }}'
+threescale_cicd_update_service_payload: '{{ lookup(''template'', ''api-calls/update_service.j2'') }}'
+threescale_cicd_create_service_payload: '{{ lookup(''template'', ''api-calls/create_service.j2'') }}'
+threescale_cicd_update_method_payload: '{{ lookup(''template'', ''api-calls/update_method.j2'') }}'
+threescale_cicd_create_method_payload: '{{ lookup(''template'', ''api-calls/create_method.j2'') }}'
+threescale_cicd_update_mapping_rule_payload: '{{ lookup(''template'', ''api-calls/update_mapping_rule.j2'') }}'
+threescale_cicd_create_mapping_rule_payload: '{{ lookup(''template'', ''api-calls/create_mapping_rule.j2'') }}'
+threescale_cicd_update_application_plan_payload: '{{ lookup(''template'', ''api-calls/update_application_plan.j2'') }}'
+threescale_cicd_create_application_plan_payload: '{{ lookup(''template'', ''api-calls/create_application_plan.j2'') }}'
+threescale_cicd_find_application_payload: '{{ lookup(''template'', ''api-calls/find_application.j2'') }}'
+threescale_cicd_update_application_payload: '{{ lookup(''template'', ''api-calls/update_application.j2'') }}'
+threescale_cicd_create_application_payload: '{{ lookup(''template'', ''api-calls/create_application.j2'') }}'
+threescale_cicd_authenticate_to_keycloak_payload: '{{ lookup(''template'', ''api-calls/keycloak/authenticate.j2'') }}'
+threescale_cicd_patch_keycloak_client_payload: '{{ lookup(''template'', ''api-calls/keycloak/patch_client.j2'') }}'
+threescale_cicd_smoke_test_headers: '{{ lookup(''template'', ''api-calls/smoke-test/headers.j2'') }}'
+threescale_cicd_smoke_test_url: '{{ lookup(''template'', ''api-calls/smoke-test/url.j2'') }}'
+threescale_cicd_promote_proxy_payload: '{{ lookup(''template'', ''api-calls/promote_proxy.j2'') }}'
+threescale_cicd_update_activedoc_payload: '{{ lookup(''template'', ''api-calls/update_activedoc.j2'') }}'
+threescale_cicd_create_activedoc_payload: '{{ lookup(''template'', ''api-calls/create_activedoc.j2'') }}'

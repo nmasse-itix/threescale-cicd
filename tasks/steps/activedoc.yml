@@ -1,0 +1,9 @@
+---
+- debug:
+    msg: '{{ threescale_cicd_openapi_rewritten }}'
+
+- include_tasks: api-calls/update_activedoc.yml
+  when: 'threescale_cicd_api_system_name in threescale_cicd_existing_activedocs'
+
+- include_tasks: api-calls/create_activedoc.yml
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_activedocs'

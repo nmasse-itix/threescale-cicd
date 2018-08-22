@@ -1,0 +1,19 @@
+---
+
+- debug:
+    var: threescale_cicd_create_mapping_rule_payload
+    verbosity: 1
+
+- name: Create the mapping rule
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/mapping_rules.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_create_mapping_rule_payload }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

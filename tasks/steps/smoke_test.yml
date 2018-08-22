@@ -1,0 +1,14 @@
+---
+
+# Retrieve a valid access token if the API is secured with OAuth/OIDC
+- include_tasks: api-calls/keycloak/authenticate.yml
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+  vars:
+    oauth_payload:
+      client_id: '{{ threescale_cicd_default_application_details.client_id }}'
+      client_secret: '{{ threescale_cicd_default_application_details.client_secret }}'
+      scope: '{{ threescale_cicd_openapi_smoketest_default_scope }}'
+      grant_type: 'client_credentials'
+
+# Do the smoke test
+- import_tasks: api-calls/smoke_test.yml

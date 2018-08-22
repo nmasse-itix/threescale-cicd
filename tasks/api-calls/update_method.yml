@@ -1,0 +1,18 @@
+---
+
+- debug:
+    var: threescale_cicd_update_method_payload
+    verbosity: 1
+
+- name: Update the method
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/metrics/{{ threescale_cicd_metric_id }}/methods/{{ (threescale_cicd_existing_metrics_details|selectattr('system_name', 'equalto', threescale_cicd_api_operation.key)|first).id }}.json
+    validate_certs: no
+    method: PATCH
+    body: '{{ threescale_cicd_update_method_payload }}'
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

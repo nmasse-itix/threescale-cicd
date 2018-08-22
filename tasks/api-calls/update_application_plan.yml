@@ -1,0 +1,18 @@
+---
+
+- debug:
+    var: threescale_cicd_update_application_plan_payload
+    verbosity: 1
+
+- name: Update the application plan
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/application_plans/{{ (threescale_cicd_existing_application_plans_details|selectattr("system_name", "equalto", threescale_cicd_application_plan.system_name)|first).id }}.json'
+    validate_certs: no
+    method: PUT
+    body: '{{ threescale_cicd_update_application_plan_payload }}'
+    status_code: 200
+  register: threescale_cicd_tmpresponse
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

@@ -1,0 +1,7 @@
+access_token={{ threescale_cicd_access_token|urlencode }}
+{%- if threescale_cicd_api_security_scheme.type == 'oauth2' -%}
+&app_id={{ threescale_cicd_default_application_appid|urlencode }}
+{%- endif -%}
+{%- if threescale_cicd_api_security_scheme.type == 'apiKey' -%}
+&user_key={{ threescale_cicd_default_application_appid|urlencode }}
+{%- endif -%}

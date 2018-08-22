@@ -1,0 +1,22 @@
+---
+
+- debug:
+    var: threescale_cicd_create_application_plan_payload
+    verbosity: 1
+
+- name: Create the application plan
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/application_plans.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_create_application_plan_payload }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+
+- set_fact:
+    threescale_cicd_existing_application_plans: '{{ threescale_cicd_existing_application_plans|union([ threescale_cicd_application_plan.system_name ]) }}'
+    threescale_cicd_existing_application_plans_details: '{{ threescale_cicd_existing_application_plans_details|union([{ "system_name": threescale_cicd_application_plan.system_name, "id": threescale_cicd_tmpresponse.json.application_plan.id }]) }}'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

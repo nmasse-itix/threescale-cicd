@@ -1,0 +1,57 @@
+---
+
+- name: Ensure pre-requisites are met
+  assert:
+    that:
+    - "threescale_cicd_access_token is defined"
+    - "threescale_cicd_openapi_file is defined"
+    msg: |-
+      This module requires at least two variables:
+      - threescale_cicd_access_token that contains an Access Token with Read/Write privileges on the 3scale Account Management API. This variable is usually set in your inventory file.
+      - threescale_cicd_openapi_file that is the path to the OpenAPI file you want to deploy in 3scale. This variable is usually passed as an extra variable (-e threescale_cicd_openapi_file=...)
+
+- name: Verify that Ansible version is >= 2.4
+  assert:
+    that: "ansible_version.full is version_compare('2.4', '>=')"
+    msg: This module requires at least Ansible 2.4
+
+- name: Check if jmespath is installed locally
+  debug: msg={{dummy|json_query('@')}}
+  register: check_jmespath
+  ignore_errors: yes
+  vars:
+    dummy: Hello World
+
+- name: Check if jinja 2.8 is installed locally
+  debug: msg={{(dummy|selectattr("id", "equalto", "hello")|first)['value']}}
+  vars:
+    dummy:
+    - id: hello
+      value: Hello World
+  register: check_jinja28
+  ignore_errors: yes
+
+- name: Check if the "do" jinja extension is enabled
+  debug: msg={% do {}.update({}) %}{{ success }}
+  vars:
+    success: 'The do extension is enabled'
+  register: check_jinja_do_ext
+  ignore_errors: yes
+
+- assert:
+    that:
+    - 'check_jmespath is success'
+    msg: "The JMESPath library is required by this role. Please install the JMESPath library with 'pip install jmespath'."
+
+- assert:
+    that:
+    - 'check_jinja28 is success'
+    msg: "At least Jinja v2.8 is required by this role. Please update Jinja with 'pip install -U Jinja2'."
+
+- assert:
+    that:
+    - 'check_jinja_do_ext is success'
+    msg: |-
+      You need to enable the 'do' extension of Jinja in your ansible.cfg:
+      [default]
+      jinja2_extensions = jinja2.ext.do

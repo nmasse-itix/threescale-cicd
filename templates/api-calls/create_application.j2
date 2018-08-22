@@ -1,0 +1,15 @@
+{% 
+  set payload = [ 
+    'access_token=' ~ threescale_cicd_access_token|urlencode,
+    'plan_id=' ~ threescale_cicd_default_application_plan_id|urlencode,
+    'name=' ~ threescale_cicd_default_application_name|urlencode,
+    'description=' ~ threescale_cicd_default_application_description|urlencode
+  ]
+%}
+{% if threescale_cicd_api_security_scheme.type == 'oauth2' %}
+{% do payload.append("application_id=" ~ threescale_cicd_default_application_appid|urlencode) %}
+{% endif %}
+{% if threescale_cicd_api_security_scheme.type == 'apiKey' %}
+{% do payload.append("user_key=" ~ threescale_cicd_default_application_appid|urlencode) %}
+{% endif %}
+{{ payload|join("&") }}
