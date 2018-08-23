@@ -11,6 +11,8 @@
     status_code: 201
     validate_certs: no
     method: POST
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
 
 - name: Wait for a couple seconds
   pause:

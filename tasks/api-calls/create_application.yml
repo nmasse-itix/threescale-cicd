@@ -12,6 +12,7 @@
     body: '{{ threescale_cicd_create_application_payload }}'
     status_code: 201
   register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
 
 - set_fact:
     threescale_cicd_default_application_details: '{{ threescale_cicd_tmpresponse.json.application }}'

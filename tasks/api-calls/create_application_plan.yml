@@ -12,6 +12,7 @@
     body: '{{ threescale_cicd_create_application_plan_payload }}'
     status_code: 201
   register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
 
 - set_fact:
     threescale_cicd_existing_application_plans: '{{ threescale_cicd_existing_application_plans|union([ threescale_cicd_application_plan.system_name ]) }}'
