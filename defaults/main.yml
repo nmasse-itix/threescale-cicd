@@ -34,3 +34,4 @@ threescale_cicd_default_application_plan: '{{ (threescale_cicd_application_plans
 # Compute the default application's appid. By default, we are using a combination
 # of app, api and environment data, hashed toghether to produce a stable id.
 threescale_cicd_default_application_appid: '{{ (threescale_cicd_default_application_name ~ threescale_cicd_api_system_name ~ threescale_cicd_access_token)|hash(''sha1'') }}'
+threescale_cicd_default_application_appsecret: '{{ (''secret'' ~ threescale_cicd_default_application_name ~ threescale_cicd_api_system_name ~ threescale_cicd_access_token)|hash(''sha1'') }}'

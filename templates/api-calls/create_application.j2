@@ -8,6 +8,7 @@
 %}
 {% if threescale_cicd_api_security_scheme.type == 'oauth2' %}
 {% do payload.append("application_id=" ~ threescale_cicd_default_application_appid|urlencode) %}
+{% do payload.append("application_key=" ~ threescale_cicd_default_application_appsecret|urlencode) %}
 {% endif %}
 {% if threescale_cicd_api_security_scheme.type == 'apiKey' %}
 {% do payload.append("user_key=" ~ threescale_cicd_default_application_appid|urlencode) %}
