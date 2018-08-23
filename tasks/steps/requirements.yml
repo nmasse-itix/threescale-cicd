@@ -10,6 +10,13 @@
       - threescale_cicd_access_token that contains an Access Token with Read/Write privileges on the 3scale Account Management API. This variable is usually set in your inventory file.
       - threescale_cicd_openapi_file that is the path to the OpenAPI file you want to deploy in 3scale. This variable is usually passed as an extra variable (-e threescale_cicd_openapi_file=...)
 
+- name: Make sure the OpenAPI File Format is YAML or JSON
+  assert:
+    that:
+    - threescale_cicd_openapi_file_format|upper == 'JSON' or threescale_cicd_openapi_file_format|upper == 'YAML'
+    msg: |-
+      The threescale_cicd_openapi_file_format parameter needs to be either 'JSON' or 'YAML'
+
 - name: Verify that Ansible version is >= 2.4
   assert:
     that: "ansible_version.full is version_compare('2.4', '>=')"

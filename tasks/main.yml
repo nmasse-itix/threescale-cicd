@@ -3,7 +3,7 @@
 # Make sure we have everything we need to run this playbook
 - import_tasks: steps/requirements.yml
 
-# Compute missing variables from the inventory
+# Warn the user about those deprecated features
 - import_tasks: steps/variables_from_inventory.yml
 
 # Load the API definition from the provided OpenAPI file

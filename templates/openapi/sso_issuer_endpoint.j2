@@ -1,0 +1,3 @@
+{%- if 'sso' in groups and groups['sso'] > 0 -%}
+{{ (hostvars[groups['sso'][0]].scheme|default('https')) ~ '://' ~ hostvars[groups['sso'][0]].client_id ~ ':' ~ hostvars[groups['sso'][0]].client_secret ~ '@' ~ groups['sso'][0] ~ '/auth/realms/' ~ hostvars[groups['sso'][0]].realm }}
+{%- endif -%}

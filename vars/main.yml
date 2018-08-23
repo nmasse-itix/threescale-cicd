@@ -9,6 +9,35 @@ threescale_cicd_metrics_to_delete: '{{ lookup(''template'', ''metrics_to_delete
 # The OpenAPI file to be pushed to 3scale as an ActiveDocs
 threescale_cicd_openapi_rewritten: '{{ lookup(''template'', ''rewritten_openapi.j2'') }}'
 
+# Compute the Keycloak Realm endpoint from the threescale_cicd_sso_issuer_endpoint
+threescale_cicd_sso_realm_endpoint: '{{ (threescale_cicd_sso_issuer_endpoint|urlsplit(''scheme'')) ~ ''://'' ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''hostname'')) ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''path'')) }}'
+
+# Compute the Keycloak REST Admin Endpoint from the threescale_cicd_sso_realm_endpoint
+threescale_cicd_sso_admin_endpoint: '{{ threescale_cicd_sso_realm_endpoint|replace(''/auth/realms/'', ''/auth/admin/realms/'') }}'
+
+##
+## OpenAPI Specification File parsing
+##
+threescale_cicd_openapi_file_content: '{{ lookup(''file'', threescale_cicd_openapi_file)|from_json if threescale_cicd_openapi_file_format|upper == ''JSON'' else lookup(''file'', threescale_cicd_openapi_file)|from_yaml }}'
+threescale_cicd_openapi_file_version: '{{ threescale_cicd_openapi_file_content.swagger }}'
+threescale_cicd_api_default_name: '{{ threescale_cicd_openapi_file_content.info.title|default("API") }}'
+threescale_cicd_api_name: '{{ lookup(''template'', ''openapi/service_name.j2'') }}'
+threescale_cicd_api_description: '{{ threescale_cicd_openapi_file_content.info.description|default("") }}'
+threescale_cicd_api_version: '{{ threescale_cicd_openapi_file_content.info.version|default("0.0.1") }}'
+threescale_cicd_api_basepath: '{{ threescale_cicd_openapi_file_content.basePath|default("") }}'
+threescale_cicd_api_operations: '{{ lookup(''template'', ''openapi/openapi_operations.j2'') }}'
+threescale_cicd_api_version_components: '{{ threescale_cicd_api_version.split(".") }}'
+threescale_cicd_api_version_major: '{{ threescale_cicd_api_version_components|first }}'
+threescale_cicd_api_security_requirements: '{{ threescale_cicd_openapi_file_content.security|default([]) }}'
+threescale_cicd_api_security_definitions: '{{ threescale_cicd_openapi_file_content.securityDefinitions|default({}) }}'
+threescale_cicd_api_security_scheme_name: '{{ threescale_cicd_api_security_requirements[0].keys()[0]|default(''none'') }}'
+threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme_name] if threescale_cicd_api_security_scheme_name in threescale_cicd_api_security_definitions else {} }}'
+threescale_cicd_api_backend_version: '{{ threescale_cicd_backend_version_mapping[threescale_cicd_api_security_scheme.type] }}'
+threescale_cicd_backend_version_mapping:
+  apiKey: '1'
+  oauth2: 'oidc'
+threescale_cicd_openapi_smoketest_path: '{{ threescale_cicd_api_basepath }}{{ threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].path }}'
+
 ##
 ## ID Lookup Variables
 ##

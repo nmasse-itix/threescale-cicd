@@ -1,0 +1,11 @@
+{%- if threescale_cicd_api_backend_hostname is not defined and 'host' in threescale_cicd_openapi_file_content -%}
+{%- set backend_hostname = threescale_cicd_openapi_file_content.host -%}
+{%- else -%}
+{%- set backend_hostname = threescale_cicd_api_backend_hostname -%}
+{%- endif -%}
+{%- if threescale_cicd_api_backend_scheme is not defined -%}
+{%- set backend_scheme = threescale_cicd_openapi_file_content.schemes|default(["http"])|first -%}
+{%- else -%}
+{%- set backend_scheme = threescale_cicd_api_backend_scheme -%}
+{%- endif -%}
+{{ backend_scheme }}://{{ backend_hostname }}

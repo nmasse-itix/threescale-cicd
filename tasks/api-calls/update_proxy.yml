@@ -13,15 +13,10 @@
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
 
-- name: Extract the staging gateway endpoint from the proxy definition
+- name: Extract the staging and production gateway endpoint from the proxy definition
   set_fact:
-    threescale_cicd_apicast_sandbox_endpoint: '{{ threescale_cicd_tmpresponse.json.proxy.sandbox_endpoint }}'
-  when: "threescale_cicd_apicast_sandbox_endpoint is not defined"
-
-- name: Extract the production gateway endpoint from the proxy definition
-  set_fact:
-    threescale_cicd_apicast_production_endpoint: '{{ threescale_cicd_tmpresponse.json.proxy.endpoint }}'
-  when: "threescale_cicd_apicast_production_endpoint is not defined"
+    threescale_cicd_apicast_discovered_sandbox_endpoint: '{{ threescale_cicd_tmpresponse.json.proxy.sandbox_endpoint }}'
+    threescale_cicd_apicast_discovered_production_endpoint: '{{ threescale_cicd_tmpresponse.json.proxy.endpoint }}'
 
 - name: Wait for a couple seconds
   pause:

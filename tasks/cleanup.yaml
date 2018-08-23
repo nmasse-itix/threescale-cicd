@@ -9,6 +9,7 @@
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
   when: 'threescale_cicd_api_service_id is defined'
+
 - name: Delete the created ActiveDocs
   uri:
     url: 'https://{{ inventory_hostname }}/admin/api/active_docs/{{ threescale_cicd_api_activedocs_id }}.json?access_token={{ threescale_cicd_access_token|urlencode }}'

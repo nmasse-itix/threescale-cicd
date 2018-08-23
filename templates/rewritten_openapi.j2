@@ -11,8 +11,8 @@
 {# Update the security definitions #}
 {% do new_openapi.update({ "securityDefinitions": security_definitions }) %}
 {# Update the "schemes" and "hostname" fields with the public apicast production URL #}
-{% set apicast_production_scheme = threescale_cicd_apicast_production_endpoint|urlsplit('scheme') %}
-{% set apicast_production_hostname = threescale_cicd_apicast_production_endpoint|urlsplit('hostname') %}
+{% set apicast_production_scheme = threescale_cicd_apicast_discovered_production_endpoint|urlsplit('scheme') %}
+{% set apicast_production_hostname = threescale_cicd_apicast_discovered_production_endpoint|urlsplit('hostname') %}
 {% do new_openapi.update({ 
   "schemes": [ apicast_production_scheme ],
   "host": apicast_production_hostname 

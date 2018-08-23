@@ -1,8 +1,8 @@
 {%- if threescale_cicd_smoke_test_env == "staging" -%}
-{{ threescale_cicd_apicast_sandbox_endpoint }}
+{{ threescale_cicd_apicast_discovered_sandbox_endpoint }}
 {%- endif -%}
 {%- if threescale_cicd_smoke_test_env == "production" -%}
-{{ threescale_cicd_apicast_production_endpoint }}
+{{ threescale_cicd_apicast_discovered_production_endpoint }}
 {%- endif -%}
 {{ threescale_cicd_openapi_smoketest_path }}
 {%- if threescale_cicd_api_security_scheme.type == "apiKey" and threescale_cicd_api_credentials_location == "query" -%}

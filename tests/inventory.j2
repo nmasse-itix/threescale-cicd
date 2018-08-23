@@ -6,12 +6,4 @@ ansible_connection=local
 
 [threescale:vars]
 threescale_cicd_access_token={{ threescale_inventory.threescale_hosted.access_token }}
-
-[sso]
-{{ threescale_inventory.sso.host }}
-
-[sso:vars]
-realm={{ threescale_inventory.sso.realm }}
-client_id={{ threescale_inventory.sso.client_id }}
-client_secret={{ threescale_inventory.sso.client_secret }}
-scheme=https
+threescale_cicd_sso_issuer_endpoint=https://{{ threescale_inventory.sso.client_id }}:{{ threescale_inventory.sso.client_secret }}@{{ threescale_inventory.sso.host }}/auth/realms/{{ threescale_inventory.sso.realm }}

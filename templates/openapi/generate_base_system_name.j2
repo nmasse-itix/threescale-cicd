@@ -1,0 +1,6 @@
+{% if 'x-threescale-system-name' in threescale_cicd_openapi_file_content.info %}
+{% set extracted_system_name = threescale_cicd_openapi_file_content.info['x-threescale-system-name']|regex_replace('[^a-zA-Z0-9_]+', '_')|lower %}
+{% else %}
+{% set extracted_system_name = threescale_cicd_openapi_file_content.info['title']|default('api')|regex_replace('[^a-zA-Z0-9_]+', '_')|lower %}
+{% endif %}
+{{ extracted_system_name }}

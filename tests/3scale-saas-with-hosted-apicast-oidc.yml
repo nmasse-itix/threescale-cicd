@@ -5,10 +5,14 @@
   gather_facts: no
   vars:
     threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api-oidc.yaml'
-  roles:
-  # Test first deployment
-  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 1 } }
+  tasks:
+  # Test a first deployment
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
   # Verify idempotence
-  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 2 } }
-  post_tasks:
-  - import_tasks: 'cleanup.yaml'
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+  # Delete the service
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'cleanup'

@@ -1,26 +1,28 @@
 ---
 
-- name: Set the threescale_cicd_sso_issuer_endpoint variable from the inventory
-  set_fact:
-    threescale_cicd_sso_issuer_endpoint: '{{ (hostvars[groups[''sso''][0]].scheme|default(''https'')) ~ ''://'' ~ hostvars[groups[''sso''][0]].client_id ~ '':'' ~ hostvars[groups[''sso''][0]].client_secret ~ ''@'' ~ groups[''sso''][0] ~ ''/auth/realms/'' ~ hostvars[groups[''sso''][0]].realm }}'
-  when: 'threescale_cicd_sso_issuer_endpoint is not defined and ''sso'' in groups and groups[''sso''] > 0'
+- name: Abort on deprecated feature -> the "sso" inventory group
+  fail:
+    msg: >
+      You are currently using a deprecated feature (the 'sso' group in your inventory).
+      Please replace it with the 'threescale_cicd_sso_issuer_endpoint' variable.
+      Alternatively, you can also bypass this warning by setting the 'threescale_cicd_deprecated_features'
+      extra variable to 'true'.
+  when: 'threescale_cicd_sso_issuer_endpoint|default("")|length > 0 and ''sso'' in groups and groups[''sso''] > 0 and threescale_cicd_api_backend_version == ''oidc'' and not threescale_cicd_deprecated_features|default(false)|bool'
 
-- name: Set the threescale_cicd_sso_realm_endpoint variable from the threescale_cicd_sso_issuer_endpoint
-  set_fact:
-    threescale_cicd_sso_realm_endpoint: '{{ (threescale_cicd_sso_issuer_endpoint|urlsplit(''scheme'')) ~ ''://'' ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''hostname'')) ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''path'')) }}'
-  when: 'threescale_cicd_sso_realm_endpoint is not defined and threescale_cicd_sso_issuer_endpoint is defined'
+- name: Abort on deprecated feature -> the "apicast-sandbox" inventory group
+  fail:
+    msg: >
+      You are currently using a deprecated feature (the 'apicast-sandbox' group in your inventory).
+      Please replace it with the 'threescale_cicd_apicast_sandbox_endpoint' variable.
+      Alternatively, you can also bypass this warning by setting the 'threescale_cicd_deprecated_features'
+      extra variable to 'true'.
+  when: 'threescale_cicd_apicast_sandbox_endpoint|default("")|length > 0 and ''apicast-sandbox'' in groups and groups[''apicast-sandbox''] > 0 and not threescale_cicd_deprecated_features|default(false)|bool'
 
-- name: Set the threescale_cicd_sso_admin_endpoint variable from the threescale_cicd_sso_realm_endpoint
-  set_fact:
-    threescale_cicd_sso_admin_endpoint: '{{ threescale_cicd_sso_realm_endpoint|replace(''/auth/realms/'', ''/auth/admin/realms/'') }}'
-  when: 'threescale_cicd_sso_admin_endpoint is not defined and threescale_cicd_sso_realm_endpoint is defined'
-
-- name: Set the threescale_cicd_apicast_sandbox_endpoint variable from the inventory
-  set_fact:
-    threescale_cicd_apicast_sandbox_endpoint: '{{ (hostvars[groups[''apicast-sandbox''][0]].scheme|default(''https'')) ~ ''://'' ~ groups[''apicast-sandbox''][0] }}'
-  when: 'threescale_cicd_apicast_sandbox_endpoint is not defined and ''apicast-sandbox'' in groups and groups[''apicast-sandbox''] > 0'
-
-- name: Set the threescale_cicd_apicast_production_endpoint variable from the inventory
-  set_fact:
-    threescale_cicd_apicast_production_endpoint: '{{ (hostvars[groups[''apicast-production''][0]].scheme|default(''https'')) ~ ''://'' ~ groups[''apicast-production''][0] }}'
-  when: 'threescale_cicd_apicast_production_endpoint is not defined and ''apicast-production'' in groups and groups[''apicast-production''] > 0'
+- name: Abort on deprecated feature -> the "apicast-production" inventory group
+  fail:
+    msg: >
+      You are currently using a deprecated feature (the 'apicast-production' group in your inventory).
+      Please replace it with the 'threescale_cicd_apicast_production_endpoint' variable.
+      Alternatively, you can also bypass this warning by setting the 'threescale_cicd_deprecated_features'
+      extra variable to 'true'.
+  when: 'threescale_cicd_apicast_production_endpoint|default("")|length > 0 and ''apicast-production'' in groups and groups[''apicast-production''] > 0 and not threescale_cicd_deprecated_features|default(false)|bool'

@@ -1,0 +1,45 @@
+---
+
+- name: Deploy the Beer Catalog API to a 3scale SaaS instance in multi environment
+  hosts: threescale
+  gather_facts: no
+  vars:
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/beer-catalog-api.json'
+    threescale_cicd_openapi_file_format: 'JSON'
+    threescale_cicd_api_backend_hostname: echo-api.3scale.net
+    threescale_cicd_openapi_smoketest_operation: GET_beer
+    threescale_cicd_api_base_system_name: beer_catalog
+  tasks:
+  # Deploy in DEV
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+    vars:
+      threescale_cicd_api_environment_name: dev
+  # Deploy in TEST
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+    vars:
+      threescale_cicd_api_environment_name: test
+  # Deploy in PROD
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+    vars:
+      threescale_cicd_api_environment_name: prod
+  # Cleanup the DEV
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'cleanup'
+    vars:
+      threescale_cicd_api_environment_name: dev
+  # Cleanup the TEST
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'cleanup'
+    vars:
+      threescale_cicd_api_environment_name: test
+  # Cleanup the PROD
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'cleanup'
+    vars:
+      threescale_cicd_api_environment_name: prod

@@ -1,0 +1,5 @@
+{%- if threescale_cicd_api_environment_name is defined -%}
+{{ threescale_cicd_api_default_name }} ({{ threescale_cicd_api_environment_name|upper }}, v{{ threescale_cicd_api_version }})
+{%- else -%}
+{{ threescale_cicd_api_default_name }} (v{{ threescale_cicd_api_version }})
+{%- endif -%}

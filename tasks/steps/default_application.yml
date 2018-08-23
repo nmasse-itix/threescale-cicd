@@ -4,7 +4,6 @@
   when: 'threescale_cicd_default_account_id is not defined'
 
 - import_tasks: "api-calls/find_application.yml"
-  when: 'threescale_cicd_default_application_id is not defined'
 
 - import_tasks: "api-calls/update_application.yml"
   when: 'threescale_cicd_default_application_id is defined'

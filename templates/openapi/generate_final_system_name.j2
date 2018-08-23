@@ -1,0 +1,4 @@
+{%- if threescale_cicd_api_environment_name is defined -%}
+{%- set system_name_prefix = threescale_cicd_api_environment_name|default("")|regex_replace('[^a-zA-Z0-9_]+', '_') ~ "_" -%}
+{%- endif -%}
+{{ system_name_prefix|default("") }}{{ threescale_cicd_api_base_system_name }}_{{ threescale_cicd_api_version_major|regex_replace('[^a-zA-Z0-9_]+', '_') }}
