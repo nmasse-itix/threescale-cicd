@@ -1,0 +1,23 @@
+---
+
+- debug:
+    var: threescale_cicd_patch_keycloak_client_payload
+    verbosity: 1
+
+- name: Patch the client in RH-SSO to support the "client_credentials" and "password" grant_type.
+  uri:
+    url: '{{ threescale_cicd_sso_admin_endpoint }}/clients/{{ threescale_cicd_default_application_sso_id|urlencode }}'
+    method: PUT
+    validate_certs: no
+    body: '{{ threescale_cicd_patch_keycloak_client_payload }}'
+    body_format: json
+    status_code: '200,204'
+    headers:
+      Authorization: 'Bearer {{ threescale_cicd_keycloak_access_token }}'
+      Content-Type: 'application/json'
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

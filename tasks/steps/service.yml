@@ -1,0 +1,7 @@
+---
+
+- include_tasks: api-calls/update_service.yml
+  when: 'threescale_cicd_api_system_name in threescale_cicd_existing_services'
+
+- include_tasks: api-calls/create_service.yml
+  when: 'threescale_cicd_api_system_name not in threescale_cicd_existing_services'

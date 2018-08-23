@@ -1,0 +1,23 @@
+---
+
+- debug:
+    var: threescale_cicd_update_proxy_payload
+    verbosity: 1
+
+- name: Update the proxy definition
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy.json
+    validate_certs: no
+    method: PATCH
+    body: '{{ threescale_cicd_update_proxy_payload }}'
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+
+- name: Extract the staging and production gateway endpoint from the proxy definition
+  set_fact:
+    threescale_cicd_apicast_discovered_sandbox_endpoint: '{{ threescale_cicd_tmpresponse.json.proxy.sandbox_endpoint }}'
+    threescale_cicd_apicast_discovered_production_endpoint: '{{ threescale_cicd_tmpresponse.json.proxy.endpoint }}'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

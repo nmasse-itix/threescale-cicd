@@ -1,0 +1,14 @@
+---
+
+- name: Delete the unused mapping rules
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/mapping_rules/{{ threescale_cicd_existing_mapping_rules[threescale_cicd_mapping_rule] }}.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+    method: DELETE
+    status_code: 200,404
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

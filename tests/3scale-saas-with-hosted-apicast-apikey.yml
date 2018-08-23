@@ -8,10 +8,14 @@
     threescale_cicd_openapi_file_format: 'JSON'
     threescale_cicd_api_backend_hostname: echo-api.3scale.net
     threescale_cicd_openapi_smoketest_operation: GET_beer
-  roles:
-  # Test first deployment
-  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 1 } }
+  tasks:
+  # Test a first deployment
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
   # Verify idempotence
-  - { role: 'nmasse-itix.threescale-cicd', vars: { 'round': 2 } }
-  post_tasks:
-  - import_tasks: 'cleanup.yaml'
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+  # Delete the service
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'cleanup'

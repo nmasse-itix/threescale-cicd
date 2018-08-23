@@ -1,0 +1,7 @@
+---
+
+- include_tasks: api-calls/update_method.yml
+  when: 'threescale_cicd_api_operation.key in threescale_cicd_existing_metrics'
+
+- include_tasks: api-calls/create_method.yml
+  when: 'threescale_cicd_api_operation.key not in threescale_cicd_existing_metrics'

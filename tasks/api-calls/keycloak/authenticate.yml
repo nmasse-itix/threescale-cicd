@@ -1,0 +1,22 @@
+---
+
+- debug:
+    var: threescale_cicd_authenticate_to_keycloak_payload
+    verbosity: 1
+
+- name: Authenticate to RH-SSO
+  uri:
+    url: '{{ threescale_cicd_sso_realm_endpoint }}/protocol/openid-connect/token'
+    body: '{{ threescale_cicd_authenticate_to_keycloak_payload }}'
+    method: POST
+    validate_certs: no
+    return_content: yes
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'
+  # temporary fix for https://github.com/ansible/ansible/issues/28078
+  until: 'threescale_cicd_tmpresponse is success'
+
+- name: Extract the access_token
+  set_fact:
+    threescale_cicd_keycloak_access_token: '{{ threescale_cicd_tmpresponse.json |json_query("access_token") }}'

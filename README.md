@@ -74,7 +74,8 @@ securityDefinitions:
 
 In this Swagger file, the following fields are used:
 
-- `x-threescale-system-name` is used as system_name for the configuration objects in 3scale.
+- `x-threescale-system-name` is used as a basis for the system_name for the
+  configuration objects in 3scale.
 - `title` is used as the name of the service definition.
 - `version` is used for proper versioning and follows the [semver scheme](https://semver.org/).
 - `host` is the DNS name of the existing API backend to expose.
@@ -128,12 +129,6 @@ ansible-playbook -i inventory deploy-api.yaml
 
 ## Inventory
 
-Three kinds of systems can be declared in the inventory and used with this role:
-
-- 3scale Admin Portal
-- Red Hat SSO
-- APIcast instances
-
 The 3scale Admin Portal that will be provisionned is the one that is referenced
 in the playbook that includes this role. For instance, in the previous example,
 the provisioned 3scale Admin Portal will be `<TENANT>-admin.3scale.net` because
@@ -175,59 +170,30 @@ And you can also define it globally, for instance as playbook vars:
     threescale_cicd_access_token: 123...456
 ```
 
-The Red Hat SSO instance (currently there can only be one), is taken by convention
-from the `sso` group. The `client_id`/`client_secret` used by Zync to synchronize
-the 3scale applications are fetched from the inventory variables, as well as the
-scheme (`http`/`https`) and the target realm.
+The Red Hat SSO instance (currently there can only be one), is defined by
+the `threescale_cicd_sso_issuer_endpoint` variable of the `threescale` group.
+
+Its syntax is `https://<client_id>:<client_secret>@hostname/auth/realms/<realm>`.
+The `client_id`/`client_secret` are used by Zync to synchronize the 3scale
+applications with Red Hat SSO.
 
 Example:
-
-```ini
-[sso]
-sso.acme.corp client_id=3scale client_secret=123 realm=acme scheme=https
-```
-
-Otherwise, if you don't want to follow this convention, you can use the
-corresponding extra variable: `threescale_cicd_sso_issuer_endpoint`. For
-the previous example, the variable would be:
 
 ```ini
 threescale_cicd_sso_issuer_endpoint=https://3scale:123@sso.acme.corp/auth/realms/acme
 ```
 
-If both the `sso` group and the `threescale_cicd_sso_issuer_endpoint` extra
-variable are specified, the extra variable has precedence over the inventory.
-
-The APIcast instances are fetched from the `apicast-sandbox` and `apicast-production`
-groups. There can only be one hostname in each group and it is the public hostname
-of each APIcast cluster (not each individual member).
-
-Example:
-
-```ini
-[apicast-sandbox]
-api-test.acme.corp scheme=http
-
-[apicast-production]
-api.acme.corp scheme=https
-```
-
-If you do not want to follow this convention, you can use the corresponding extra
-variables:
+The APIcast instances are defined from the following extra variables:
 
 - `threescale_cicd_apicast_sandbox_endpoint`
 - `threescale_cicd_apicast_production_endpoint`
 
-For the previous example, the variables would be:
+Example:
 
 ```ini
 threescale_cicd_apicast_sandbox_endpoint=http://api-test.acme.corp
 threescale_cicd_apicast_production_endpoint=https://api.acme.corp
 ```
-
-If both the `apicast-*` groups and the `threescale_cicd_apicast_*_endpoint`
-extra variables are specified, the extra variables have precedence over the
-inventory.
 
 ## OpenAPI Specification fields
 
@@ -245,7 +211,7 @@ The following extended fields of the OpenAPI Specifications can be used:
 If the extended fields cannot be used (if for instance you do not want to alter
 your API Contract), you can use the corresponding extra variable:
 
-- `threescale_cicd_api_system_name`
+- `threescale_cicd_api_base_system_name`
 - `threescale_cicd_openapi_smoketest_operation`
 
 Here is an example of an OpenAPI Specification using those extended fields:
@@ -284,7 +250,7 @@ To achieve the same effect without the OpenAPI extended fields, you would have
 to pass the following extra variables:
 
 ```ini
-threescale_cicd_api_system_name=echo-api
+threescale_cicd_api_base_system_name=echo-api
 threescale_cicd_openapi_smoketest_operation=Echo # The operationId of the "GET /" method
 ```
 
@@ -389,13 +355,27 @@ Defines the system_name of the 3scale Service that will be provisioned.
 
 - **Syntax:** lower case alphanumeric + underscore
 - **Required:** no
-- **Default value:** if not defined, the system_name is taken from the OpenAPI
-  Specification `x-threescale-system-name` extended field, suffixed by the
-  API major version number. If no `x-threescale-system-name` extended field
-  can be found, the `title` field is sanitized and then used.
+- **Default value:** if not defined, the system_name is taken from the
+  `threescale_cicd_api_base_system_name` variable. This base system_name
+  is then suffixed by the API major version number and prefixed by the
+  environment name (only if `threescale_cicd_api_environment_name` is defined).
+- **Example:** `dev_my_wonderful_service_1`
+
+### `threescale_cicd_api_base_system_name`
+
+Is used as a basis to compute the `threescale_cicd_api_system_name`.
+
+- **Syntax:** lower case alphanumeric + underscore
+- **Required:** no
+- **Default value:** if not defined, the OpenAPI Specification
+  `x-threescale-system-name` extended field or as a last resort, the `title`
+  field is sanitized and then used.
   If no title can be found, the default value `API` is used. If no version
   number can be found, `0` is used.
 - **Example:** `my_wonderful_service`
+
+Note: If both `threescale_cicd_api_base_system_name` and `threescale_cicd_api_system_name`
+are set, the later has precedence.
 
 ### `threescale_cicd_wildcard_domain`
 
@@ -414,7 +394,7 @@ Automatically defines the APIcast public URLs based on a scheme.
 
   ```ini
   threescale_cicd_wildcard_domain=acme.corp
-  threescale_cicd_api_system_name=my_wonderful_service
+  threescale_cicd_api_base_system_name=my_wonderful_service
   ```
 
   are equivalent to:
@@ -479,7 +459,7 @@ when deploying the same API multiple times on the same 3scale instance.
 
 ### Miscellaneous variables
 
-Miscellaneous variables defined in [defaults/main.yml](defaults/main.yml])
+Miscellaneous variables defined in [defaults/main.yml](defaults/main.yml)
 provide sensible defaults. Have a look at them.
 
 ## Dependencies

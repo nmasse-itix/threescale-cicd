@@ -1,0 +1,17 @@
+---
+
+- debug:
+    msg: "Deleting unused metric {{ threescale_cicd_metric.system_name }}..."
+
+- name: Delete the metric
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/metrics/{{ threescale_cicd_metric_id }}/methods/{{ threescale_cicd_metric.id }}.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+    method: DELETE
+    status_code: 200,404
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

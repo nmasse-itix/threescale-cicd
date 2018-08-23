@@ -1,143 +1,53 @@
 ---
 
-- import_tasks: check_requirements.yml
+# Make sure we have everything we need to run this playbook
+- import_tasks: steps/requirements.yml
 
-- name: Ensure pre-requisites are met
-  assert:
-    that:
-    - "threescale_cicd_access_token is defined"
-    - "threescale_cicd_openapi_file is defined"
-    msg: |-
-      This module requires at least two variables:
-      - threescale_cicd_access_token that contains an Access Token with Read/Write privileges on the 3scale Account Management API. This variable is usually set in your inventory file.
-      - threescale_cicd_openapi_file that is the path to the OpenAPI file you want to deploy in 3scale. This variable is usually passed as an extra variable (-e threescale_cicd_openapi_file=...)
-
-- name: Set the threescale_cicd_sso_issuer_endpoint variable from the inventory
-  set_fact:
-    threescale_cicd_sso_issuer_endpoint: '{{ (hostvars[groups[''sso''][0]].scheme|default(''https'')) ~ ''://'' ~ hostvars[groups[''sso''][0]].client_id ~ '':'' ~ hostvars[groups[''sso''][0]].client_secret ~ ''@'' ~ groups[''sso''][0] ~ ''/auth/realms/'' ~ hostvars[groups[''sso''][0]].realm }}'
-  when: 'threescale_cicd_sso_issuer_endpoint is not defined and ''sso'' in groups and groups[''sso''] > 0'
-
-- name: Set the threescale_cicd_sso_realm_endpoint variable from the threescale_cicd_sso_issuer_endpoint
-  set_fact:
-    threescale_cicd_sso_realm_endpoint: '{{ (threescale_cicd_sso_issuer_endpoint|urlsplit(''scheme'')) ~ ''://'' ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''hostname'')) ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''path'')) }}'
-  when: 'threescale_cicd_sso_realm_endpoint is not defined and threescale_cicd_sso_issuer_endpoint is defined'
-
-- name: Set the threescale_cicd_sso_admin_endpoint variable from the threescale_cicd_sso_realm_endpoint
-  set_fact:
-    threescale_cicd_sso_admin_endpoint: '{{ threescale_cicd_sso_realm_endpoint|replace(''/auth/realms/'', ''/auth/admin/realms/'') }}'
-  when: 'threescale_cicd_sso_admin_endpoint is not defined and threescale_cicd_sso_realm_endpoint is defined'
-
-- name: Set the threescale_cicd_apicast_sandbox_endpoint variable from the inventory
-  set_fact:
-    threescale_cicd_apicast_sandbox_endpoint: '{{ (hostvars[groups[''apicast-sandbox''][0]].scheme|default(''https'')) ~ ''://'' ~ groups[''apicast-sandbox''][0] }}'
-  when: 'threescale_cicd_apicast_sandbox_endpoint is not defined and ''apicast-sandbox'' in groups and groups[''apicast-sandbox''] > 0'
-
-- name: Set the threescale_cicd_apicast_production_endpoint variable from the inventory
-  set_fact:
-    threescale_cicd_apicast_production_endpoint: '{{ (hostvars[groups[''apicast-production''][0]].scheme|default(''https'')) ~ ''://'' ~ groups[''apicast-production''][0] }}'
-  when: 'threescale_cicd_apicast_production_endpoint is not defined and ''apicast-production'' in groups and groups[''apicast-production''] > 0'
+# Warn the user about those deprecated features
+- import_tasks: steps/variables_from_inventory.yml
 
 # Load the API definition from the provided OpenAPI file
-- import_tasks: read_openapi_file.yml
+- import_tasks: steps/read_openapi.yml
 
+# Discover the current state of the platform
+- import_tasks: steps/discover.yml
 
-- name: Compute the service system_name
-  set_fact:
-    threescale_cicd_api_system_name: '{{ threescale_cicd_api_environment_name ~ "_" ~ threescale_cicd_api_system_name }}'
-  when: 'threescale_cicd_api_environment_name is defined'
+# Create or update the service definition
+- import_tasks: steps/service.yml
 
-- debug:
-    msg: "Will work on service with system_name = {{ threescale_cicd_api_system_name }}"
+# Create or update the methods
+- import_tasks: steps/methods.yml
 
-- set_fact:
-    threescale_cicd_api_deployment_type: 'self_managed'
-  when: 'threescale_cicd_api_deployment_type is not defined and (threescale_cicd_apicast_sandbox_endpoint is defined or threescale_cicd_apicast_production_endpoint is defined)'
-
-- set_fact:
-    threescale_cicd_api_deployment_type: 'hosted'
-  when: 'threescale_cicd_api_deployment_type is not defined'
-
-- set_fact:
-    threescale_cicd_api_service_definition:
-      name: '{{ threescale_cicd_api_name }}'
-      deployment_option: '{{ threescale_cicd_api_deployment_type }}'
-      system_name: '{{ threescale_cicd_api_system_name }}'
-      backend_version: '{{ threescale_cicd_api_backend_version }}'
-
-# Create the service definition
-- import_tasks: create_service.yml
-
-- set_fact:
-    threescale_cicd_api_credentials_location: '{{ ''headers'' if threescale_cicd_api_security_scheme.in == ''header'' else threescale_cicd_api_security_scheme.in }}'
-  when: 'threescale_cicd_api_security_scheme.type == ''apiKey'''
-
-- set_fact:
-    threescale_cicd_api_credentials_location: 'headers'
-  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
-
-- set_fact:
-    threescale_cicd_api_proxy_definition:
-      credentials_location: '{{ threescale_cicd_api_credentials_location }}'
-      api_backend: '{{ threescale_cicd_private_base_url }}'
-
-- set_fact:
-    threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''auth_user_key'': threescale_cicd_api_security_scheme.name }) }}'
-  when: 'threescale_cicd_api_security_scheme.type == ''apiKey'''
-
-- set_fact:
-    threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''oidc_issuer_endpoint'': threescale_cicd_sso_issuer_endpoint }) }}'
-  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
-
-- set_fact:
-    threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''sandbox_endpoint'': threescale_cicd_apicast_sandbox_endpoint }) }}'
-  when: 'threescale_cicd_apicast_sandbox_endpoint is defined'
-
-- set_fact:
-    threescale_cicd_api_proxy_definition: '{{ threescale_cicd_api_proxy_definition|combine({ ''endpoint'': threescale_cicd_apicast_production_endpoint }) }}'
-  when: 'threescale_cicd_apicast_production_endpoint is defined'
-
-# Update the metrics
-- import_tasks: update_metrics.yml
-
-# Update the mapping rules
-- import_tasks: update_mapping_rules.yml
+# Create, update or delete the mapping rules
+- import_tasks: steps/mapping_rules.yml
 
 # Update the proxy
-- import_tasks: update_proxy.yml
+- import_tasks: steps/proxy.yml
 
-- name: Get the list of existing application plans
-  uri:
-    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/application_plans.json?access_token={{ threescale_cicd_access_token|urlencode }}
-    validate_certs: no
-  register: threescale_cicd_tmpresponse
+# Create or update application plans
+- import_tasks: steps/application_plans.yml
 
-- set_fact:
-    threescale_cicd_existing_application_plans: '{{ threescale_cicd_tmpresponse.json|json_query(''plans[*].application_plan.system_name'') }}'
-    threescale_cicd_existing_application_plans_details: '{{ threescale_cicd_tmpresponse.json|json_query(''plans[].{"system_name": application_plan.system_name, "id": application_plan.id}'') }}'
-
-# Create application plans if needed
-- include_tasks: create_application_plans.yml
-  with_items: '{{ threescale_cicd_application_plans|default([]) }}'
-  loop_control:
-    loop_var: threescale_cicd_tmp_plan
+# Create or update the default application if smoke tests are needed
+- include_tasks: steps/default_application.yml
+  when: 'threescale_cicd_openapi_smoketest_path is defined and threescale_cicd_application_plans is defined'
 
 # Run smoke tests on the staging gateway
-- include_tasks: smoke_tests.yml
+- include_tasks: steps/smoke_test.yml
   vars:
-    threescale_cicd_env: staging
+    threescale_cicd_smoke_test_env: staging
   when: 'threescale_cicd_openapi_smoketest_path is defined and threescale_cicd_application_plans is defined'
 
 # Promote to production
-- import_tasks: promote.yml
+- import_tasks: steps/promote.yml
 
 # Run smoke tests on the production gateway
-- include_tasks: smoke_tests.yml
+- include_tasks: steps/smoke_test.yml
   vars:
-    threescale_cicd_env: production
+    threescale_cicd_smoke_test_env: production
   when: 'threescale_cicd_openapi_smoketest_path is defined and threescale_cicd_application_plans is defined'
 
 # Delete the metrics that are not needed anymore
-- import_tasks: delete_unused_metrics.yml
+- import_tasks: steps/cleanup_metrics.yml
 
 # Publish the OpenAPI Specifications file on the 3scale Admin Portal
-- import_tasks: create_activedocs.yml
+- import_tasks: steps/activedoc.yml

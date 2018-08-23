@@ -1,0 +1,5 @@
+{%- if threescale_cicd_wildcard_domain is defined -%}
+{{ threescale_cicd_default_apicast_scheme }}://{{ (threescale_cicd_api_base_system_name ~ "-" ~ threescale_cicd_api_version_major)|regex_replace('[^a-zA-Z0-9-]+', '-')|lower }}{{ threescale_cicd_default_staging_suffix }}.{{ threescale_cicd_wildcard_domain }}
+{%- elif 'apicast-sandbox' in groups and groups['apicast-sandbox'] > 0 -%}
+{{ (hostvars[groups['apicast-sandbox'][0]].scheme|default('https')) ~ '://' ~ groups['apicast-sandbox'][0] }}
+{%- endif -%}

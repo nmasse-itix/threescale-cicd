@@ -1,0 +1,5 @@
+{% set payload = [ ] %}
+{% for key, value in oauth_payload.items() %}
+{% do payload.append(key ~ "=" ~ value|urlencode) %}
+{% endfor %}
+{{ payload|join("&") }}

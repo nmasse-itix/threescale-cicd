@@ -1,0 +1,5 @@
+{% set mapping_rules = {} %}
+{% for value in threescale_cicd_existing_mapping_rules_details %}
+{% do mapping_rules.update({ (threescale_cicd_existing_metrics_details|selectattr("id", "equalto", value.metric_id)|first).system_name: value.id }) %}
+{% endfor %}
+{{ mapping_rules }}

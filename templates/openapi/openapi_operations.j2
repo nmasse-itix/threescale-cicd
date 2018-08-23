@@ -1,0 +1,26 @@
+{% set operations = {} -%}
+{% if 'paths' in threescale_cicd_openapi_file_content -%}
+    {% for path, verbs in threescale_cicd_openapi_file_content['paths'].items() -%}
+    {% if path.startswith('/') -%}
+        {% for verb, method_description in verbs.items() -%}
+        {% if verb != '$ref' and verb != 'parameters' -%}
+            {% if 'operationId' in method_description -%}
+            {% set operation_id = method_description['operationId'] -%}
+            {% else -%}
+            {% set operation_id = verb.upper() + path -%}
+            {% endif -%}
+            {% set operation_id = operation_id|regex_replace('[^0-9a-zA-Z_]+', '_') -%}
+            {% set operation = { operation_id: { 'path': path, 'verb': verb } } -%}
+            {% if 'summary' in method_description -%}
+            {% do operation[operation_id].update({ 'friendly_name': method_description.summary }) -%}
+            {% endif -%}
+            {% if 'description' in method_description -%}
+            {% do operation[operation_id].update({ 'description': method_description.description }) -%}
+            {% endif -%}
+            {% do operations.update(operation) -%}
+        {% endif -%}
+        {% endfor -%}
+    {% endif -%}
+    {% endfor -%}
+{% endif -%}
+{{ operations }}

@@ -1,0 +1,23 @@
+---
+
+- debug:
+    var: threescale_cicd_create_activedoc_payload
+    verbosity: 1
+
+- name: Create the ActiveDocs
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/active_docs.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_create_activedoc_payload }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
+
+- set_fact:
+    threescale_cicd_existing_activedocs: '{{ threescale_cicd_existing_activedocs|union([ threescale_cicd_tmpresponse.json.api_doc.system_name ]) }}'
+    threescale_cicd_existing_activedocs_details: '{{ threescale_cicd_existing_activedocs_details|union([ { ''id'': threescale_cicd_tmpresponse.json.api_doc.id, ''system_name'': threescale_cicd_tmpresponse.json.api_doc.system_name } ]) }}'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

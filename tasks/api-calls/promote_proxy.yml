@@ -1,0 +1,19 @@
+---
+
+- debug:
+    var: threescale_cicd_promote_proxy_payload
+    verbosity: 1
+
+- name: Promote to production
+  uri:
+    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_staging_environment_name }}/{{ threescale_cicd_staging_proxy_version }}/promote.json'
+    body: '{{ threescale_cicd_promote_proxy_payload }}'
+    status_code: 201
+    validate_certs: no
+    method: POST
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

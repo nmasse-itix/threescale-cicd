@@ -1,0 +1,6 @@
+---
+
+- import_tasks: "api-calls/get_proxy_version.yml"
+
+- include_tasks: "api-calls/promote_proxy.yml"
+  when: 'threescale_cicd_staging_proxy_version != threescale_cicd_production_proxy_version'

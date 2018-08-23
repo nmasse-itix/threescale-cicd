@@ -1,0 +1,10 @@
+{% 
+  set payload = [ 
+    'access_token=' ~ threescale_cicd_access_token|urlencode,
+    'friendly_name=' ~ threescale_cicd_api_operation.value.friendly_name|default(threescale_cicd_api_operation.key)|urlencode,
+    'description=' ~ threescale_cicd_api_operation.value.description|default('')|urlencode,
+    'system_name=' ~ threescale_cicd_api_operation.key|urlencode,
+    'unit=hits'
+  ]
+%}
+{{ payload|join("&") }}

@@ -1,0 +1,6 @@
+---
+
+- include_tasks: "api-calls/delete_metric.yml"
+  with_items: '{{ threescale_cicd_metrics_to_delete }}'
+  loop_control:
+    loop_var: threescale_cicd_metric

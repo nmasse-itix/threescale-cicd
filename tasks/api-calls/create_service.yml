@@ -1,0 +1,24 @@
+---
+
+- debug:
+    var: threescale_cicd_create_service_payload
+    verbosity: 1
+
+- name: Create the service
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services.json
+    validate_certs: no
+    method: POST
+    body: '{{ threescale_cicd_create_service_payload }}'
+    status_code: 201
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 201'
+
+- set_fact:
+    threescale_cicd_existing_services: '{{ threescale_cicd_existing_services|union([ threescale_cicd_tmpresponse.json.service.system_name ]) }}'
+    threescale_cicd_existing_services_details: '{{ threescale_cicd_existing_services_details|union([ { ''id'': threescale_cicd_tmpresponse.json.service.id, ''system_name'': threescale_cicd_tmpresponse.json.service.system_name } ]) }}'
+    cacheable: true
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

@@ -1,0 +1,22 @@
+{% set security_definitions = threescale_cicd_api_security_definitions %}
+{% set new_openapi = threescale_cicd_openapi_file_content %}
+{# Add the RH-SSO endpoints to the OpenAPI securityDefinitions #}
+{% if threescale_cicd_api_security_scheme.type == "oauth2" %}
+{% do security_definitions[threescale_cicd_api_security_scheme_name].update({ "authorizationUrl": threescale_cicd_sso_realm_endpoint ~ "/protocol/openid-connect/auth", "tokenUrl": threescale_cicd_sso_realm_endpoint ~ "/protocol/openid-connect/token" }) %}
+{% endif %}
+{# Add the RH-SSO default scope to the OpenAPI securityDefinitions #}
+{% if threescale_cicd_api_security_scheme.type == "oauth2" and "scopes" not in threescale_cicd_api_security_scheme %}
+{% do security_definitions[threescale_cicd_api_security_scheme_name].update({ "scopes": threescale_cicd_default_oauth_scopes }) %}
+{% endif %}
+{# Update the security definitions #}
+{% do new_openapi.update({ "securityDefinitions": security_definitions }) %}
+{# Update the "schemes" and "hostname" fields with the public apicast production URL #}
+{% set apicast_production_scheme = threescale_cicd_apicast_discovered_production_endpoint|urlsplit('scheme') %}
+{% set apicast_production_hostname = threescale_cicd_apicast_discovered_production_endpoint|urlsplit('hostname') %}
+{% do new_openapi.update({ 
+  "schemes": [ apicast_production_scheme ],
+  "host": apicast_production_hostname 
+}) %}
+{# Make sure the swagger version is a string and not a number #}
+{% do new_openapi.update({ "swagger": new_openapi.swagger ~ "" }) %}
+{{ new_openapi }}

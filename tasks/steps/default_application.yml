@@ -1,0 +1,32 @@
+---
+
+- import_tasks: "api-calls/find_first_account.yml"
+  when: 'threescale_cicd_default_account_id is not defined'
+
+- import_tasks: "api-calls/find_application.yml"
+
+- import_tasks: "api-calls/update_application.yml"
+  when: 'threescale_cicd_default_application_id is defined'
+
+- import_tasks: "api-calls/create_application.yml"
+  when: 'threescale_cicd_default_application_id is not defined'
+
+##
+## When using OAuth / OIDC authentication, we need to patch the Keycloak client
+## to support the client_credentials grant.
+##
+
+- include_tasks: api-calls/keycloak/authenticate.yml
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+  vars:
+    oauth_payload:
+      client_id: '{{ threescale_cicd_sso_issuer_endpoint|urlsplit(''username'') }}'
+      client_secret: '{{ threescale_cicd_sso_issuer_endpoint|urlsplit(''password'') }}'
+      scope: '{{ threescale_cicd_openapi_smoketest_default_scope }}'
+      grant_type: 'client_credentials'
+
+- include_tasks: api-calls/keycloak/wait_for_client.yml
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+
+- include_tasks: api-calls/keycloak/patch_client.yml
+  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''

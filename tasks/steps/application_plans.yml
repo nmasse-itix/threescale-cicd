@@ -1,0 +1,6 @@
+---
+
+- include_tasks: steps/application_plan.yml
+  with_items: '{{ threescale_cicd_application_plans|default([]) }}'
+  loop_control:
+    loop_var: threescale_cicd_application_plan

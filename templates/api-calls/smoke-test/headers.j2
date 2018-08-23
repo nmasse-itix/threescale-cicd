@@ -1,0 +1,8 @@
+{% set headers = {} %}
+{% if threescale_cicd_api_security_scheme.type == "apiKey" and threescale_cicd_api_credentials_location == "headers" %}
+{% do headers.update({ threescale_cicd_api_security_scheme.name|urlencode: threescale_cicd_default_application_details.user_key }) %}
+{% endif %}
+{% if threescale_cicd_api_security_scheme.type == "oauth2" and threescale_cicd_api_credentials_location == "headers" %}
+{% do headers.update({ 'Authorization': 'Bearer ' ~ threescale_cicd_keycloak_access_token }) %}
+{% endif %}
+{{ headers }}

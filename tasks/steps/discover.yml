@@ -1,0 +1,59 @@
+---
+
+- name: Retrieve existing Services from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmpresponse
+  when: threescale_cicd_existing_services is not defined
+
+- set_fact:
+    threescale_cicd_existing_services: '{{ threescale_cicd_tmpresponse.json|json_query(''services[*].service.system_name'') }}'
+    threescale_cicd_existing_services_details: '{{ threescale_cicd_tmpresponse.json|json_query(''services[].{"system_name": service.system_name, "id": service.id}'') }}'
+    cacheable: true
+  when: threescale_cicd_existing_services is not defined
+
+- debug:
+    msg: "Found {{ threescale_cicd_existing_services|length }} services"
+    verbosity: 1
+
+- debug:
+    var: threescale_cicd_existing_services_details
+    verbosity: 1
+
+- name: Get the list of existing application plans
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/application_plans.json?access_token={{ threescale_cicd_access_token|urlencode }}
+    validate_certs: no
+  register: threescale_cicd_tmpresponse
+  when: threescale_cicd_api_system_name in threescale_cicd_existing_services
+
+- set_fact:
+    threescale_cicd_existing_application_plans: '{{ threescale_cicd_tmpresponse.json|json_query(''plans[*].application_plan.system_name'') if threescale_cicd_api_system_name in threescale_cicd_existing_services else [] }}'
+    threescale_cicd_existing_application_plans_details: '{{ threescale_cicd_tmpresponse.json|json_query(''plans[].{"system_name": application_plan.system_name, "id": application_plan.id}'') if threescale_cicd_api_system_name in threescale_cicd_existing_services else [] }}'
+
+- debug:
+    msg: "Found {{ threescale_cicd_existing_application_plans|length }} application plans"
+    verbosity: 1
+
+- debug:
+    var: threescale_cicd_existing_application_plans_details
+    verbosity: 1
+
+- name: Retrieve existing ActiveDocs from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/active_docs.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmp_allactivedocs
+
+- set_fact:
+    threescale_cicd_existing_activedocs: '{{ threescale_cicd_tmp_allactivedocs.json|json_query(''api_docs[*].api_doc.system_name'') }}'
+    threescale_cicd_existing_activedocs_details: '{{ threescale_cicd_tmp_allactivedocs.json|json_query(''api_docs[].{"system_name": api_doc.system_name, "id": api_doc.id}'') }}'
+
+- debug:
+    msg: "Found {{ threescale_cicd_existing_activedocs|length }} active docs"
+    verbosity: 1
+
+- debug:
+    var: threescale_cicd_existing_activedocs_details
+    verbosity: 1

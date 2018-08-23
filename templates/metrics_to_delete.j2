@@ -1,0 +1,7 @@
+{% set to_delete = [] %}
+{% for metric in threescale_cicd_existing_metrics_details %}
+{% if metric.system_name != "hits" and metric.system_name not in threescale_cicd_api_operations %}
+{% do to_delete.append(metric) %}
+{% endif %}
+{% endfor %}
+{{ to_delete }}

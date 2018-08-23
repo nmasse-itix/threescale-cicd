@@ -1,0 +1,21 @@
+---
+
+- debug:
+    var: threescale_cicd_update_application_payload
+    verbosity: 1
+
+- name: Update the application
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/accounts/{{ threescale_cicd_default_account_id }}/applications/{{ threescale_cicd_default_application_id }}.json
+    validate_certs: no
+    method: PUT
+    body: '{{ threescale_cicd_update_application_payload }}'
+    status_code: 200
+  register: threescale_cicd_tmpresponse
+
+- set_fact:
+    threescale_cicd_default_application_details: '{{ threescale_cicd_tmpresponse.json.application }}'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

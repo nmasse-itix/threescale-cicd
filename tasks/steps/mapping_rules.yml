@@ -1,0 +1,25 @@
+---
+
+- name: Retrieve existing mapping rules from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/mapping_rules.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmpresponse
+
+- set_fact:
+    threescale_cicd_existing_mapping_rules_details: '{{ threescale_cicd_tmpresponse.json|json_query(''mapping_rules[].{"metric_id": mapping_rule.metric_id, "id": mapping_rule.id}'') }}'
+
+- include_tasks: "api-calls/create_mapping_rule.yml"
+  with_items: '{{ threescale_cicd_mapping_rules_to_create }}'
+  loop_control:
+    loop_var: threescale_cicd_mapping_rule
+
+- include_tasks: "api-calls/update_mapping_rule.yml"
+  with_items: '{{ threescale_cicd_mapping_rules_to_update }}'
+  loop_control:
+    loop_var: threescale_cicd_mapping_rule
+
+- include_tasks: "api-calls/delete_mapping_rule.yml"
+  with_items: '{{ threescale_cicd_mapping_rules_to_delete }}'
+  loop_control:
+    loop_var: threescale_cicd_mapping_rule

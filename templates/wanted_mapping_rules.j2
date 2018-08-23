@@ -1,0 +1,5 @@
+{% set mapping_rules = {} %}
+{% for key, value in threescale_cicd_api_operations.items() %}
+{% do mapping_rules.update({ key: { "http_method": value.verb.upper(), "pattern": threescale_cicd_api_basepath ~ value.path ~ "$", "delta": 1 } }) %}
+{% endfor %}
+{{ mapping_rules }}

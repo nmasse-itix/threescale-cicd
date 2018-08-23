@@ -1,0 +1,18 @@
+---
+
+- name: Wait for the new client to appear in RH-SSO
+  uri:
+    url: '{{ threescale_cicd_sso_admin_endpoint }}/clients?clientId={{ threescale_cicd_default_application_appid|urlencode }}'
+    method: GET
+    validate_certs: no
+    return_content: yes
+    headers:
+      Authorization: 'Bearer {{ threescale_cicd_keycloak_access_token }}'
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'
+  until: 'threescale_cicd_tmpresponse is success and threescale_cicd_tmpresponse.json|length > 0'
+
+- set_fact:
+    threescale_cicd_default_application_sso_id: '{{ threescale_cicd_tmpresponse.json[0].id }}'
+    threescale_cicd_default_application_sso_body: '{{ threescale_cicd_tmpresponse.json[0] }}'
