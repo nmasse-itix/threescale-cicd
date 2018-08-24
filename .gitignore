@@ -1,3 +1,4 @@
 *.retry
 inventory
 3scale-inventory.*
+bin

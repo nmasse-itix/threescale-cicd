@@ -1,0 +1,22 @@
+---
+
+- name: Check if go-swagger is installed globally
+  command: swagger version
+  register: check_global_goswagger_version
+  changed_when: false
+  ignore_errors: yes
+
+- set_fact:
+    threescale_cicd_goswagger_command: 'swagger'
+  when: check_global_goswagger_version is success
+
+- name: Check if go-swagger is installed locally
+  command: '{{ threescale_cicd_local_bin_path }}/swagger version'
+  register: check_local_goswagger_version
+  changed_when: false
+  ignore_errors: yes
+  when: check_global_goswagger_version is failed
+
+- set_fact:
+    threescale_cicd_goswagger_command: '{{ threescale_cicd_local_bin_path }}/swagger'
+  when: check_local_goswagger_version is success and check_local_goswagger_version is not skipped

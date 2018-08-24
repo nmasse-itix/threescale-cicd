@@ -17,6 +17,12 @@ threescale_cicd_application_plans:
   state: hidden
   name: Ansible Test Plan
 
+# A folder where to download dependencies, when required
+threescale_cicd_local_bin_path: '{{ playbook_dir }}/bin'
+
+# Enable the OpenAPI Specification validation
+threescale_cicd_validate_openapi: yes
+
 # APIcast public base URLs
 threescale_cicd_apicast_sandbox_endpoint: '{{ lookup(''template'', ''openapi/apicast_sandbox_endpoint.j2'') }}'
 threescale_cicd_apicast_production_endpoint: '{{ lookup(''template'', ''openapi/apicast_production_endpoint.j2'') }}'

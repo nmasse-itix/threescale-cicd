@@ -3,6 +3,10 @@
 # Make sure we have everything we need to run this playbook
 - import_tasks: steps/requirements.yml
 
+# Validate the API definition against the Swagger 2.0 / OAS 3.0
+- include_tasks: steps/validate_openapi.yml
+  when: threescale_cicd_validate_openapi|bool
+
 # Warn the user about those deprecated features
 - import_tasks: steps/variables_from_inventory.yml
 
