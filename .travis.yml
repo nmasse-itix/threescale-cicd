@@ -4,6 +4,9 @@ python:
 install:
 - pip install ansible==2.4.0
 - pip install jmespath
+# Pre-install go-swagger locally since it cannot be fetched from the Travis-CI
+# infrastructures because of rate limits imposed by GitHub on its API.
+- curl -L -o /usr/local/bin/swagger https://github.com/go-swagger/go-swagger/releases/download/0.16.0/swagger_linux_amd64 && chmod 755 /usr/local/bin/swagger
 script:
 - ansible-playbook tests/write-inventory-files.yml
 - ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-apikey.yml
