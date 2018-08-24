@@ -457,6 +457,26 @@ when deploying the same API multiple times on the same 3scale instance.
 - **Default value:** none, no prefixing is performed.
 - **Examples:** `dev`, `test` or `prod`
 
+### `threescale_cicd_validate_openapi`
+
+Validates the OpenAPI Specification file against the official schema. To do this,
+the [go-swagger](https://goswagger.io/) tool is used.
+
+You can pre-install this tool somewhere in your `PATH`. Alternatively, you can
+also point the complete path to the `swagger` command with the
+`threescale_cicd_goswagger_command` extra variable.
+
+If the tool is missing, it will be automatically downloaded from GitHub and
+installed in `{{ threescale_cicd_local_bin_path }}`.
+
+- **Syntax:** boolean (`yes`, `no`, `true`, `false`)
+- **Required:** no
+- **Default value:** `yes`
+- **Examples:**
+  - `threescale_cicd_validate_openapi=no`
+  - `threescale_cicd_goswagger_command=/usr/local/bin/swagger`
+  - `threescale_cicd_local_bin_path=/tmp`
+
 ### Miscellaneous variables
 
 Miscellaneous variables defined in [defaults/main.yml](defaults/main.yml)

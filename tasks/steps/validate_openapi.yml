@@ -1,0 +1,17 @@
+---
+
+- debug:
+    msg: >
+      Will use go-swagger at '{{ threescale_cicd_goswagger_command }}' as instructed.
+      Auto-detection and download is DISABLED.
+  when: threescale_cicd_goswagger_command is defined
+
+- include_tasks: "steps/find_goswagger.yml"
+  when: threescale_cicd_goswagger_command is not defined
+
+- include_tasks: "steps/install_goswagger.yml"
+  when: threescale_cicd_goswagger_command is not defined
+
+- name: Validate the provided OpenAPI Specification file
+  command: '{{ threescale_cicd_goswagger_command }} validate {{ threescale_cicd_openapi_file }}'
+  changed_when: false

@@ -35,3 +35,5 @@ securityDefinitions:
     flow: accessCode
     scopes:
       openid: Get an OpenID Connect token
+    authorizationUrl: http://dummy/placeholder
+    tokenUrl: http://dummy/placeholder
