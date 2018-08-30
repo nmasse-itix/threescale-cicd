@@ -24,7 +24,6 @@ threescale_cicd_api_default_name: '{{ threescale_cicd_openapi_file_content.info.
 threescale_cicd_api_name: '{{ lookup(''template'', ''openapi/service_name.j2'') }}'
 threescale_cicd_api_description: '{{ threescale_cicd_openapi_file_content.info.description|default("") }}'
 threescale_cicd_api_version: '{{ threescale_cicd_openapi_file_content.info.version|default("0.0.1") }}'
-threescale_cicd_api_basepath: '{{ threescale_cicd_openapi_file_content.basePath|default("") }}'
 threescale_cicd_api_operations: '{{ lookup(''template'', ''openapi/openapi_operations.j2'') }}'
 threescale_cicd_api_version_components: '{{ threescale_cicd_api_version.split(".") }}'
 threescale_cicd_api_version_major: '{{ threescale_cicd_api_version_components|first }}'
