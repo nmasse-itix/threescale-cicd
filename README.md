@@ -447,6 +447,17 @@ Defines the 3scale Private Base URL.
 - **Default value:** `<threescale_cicd_api_backend_scheme>://<threescale_cicd_api_backend_hostname>`
 - **Example:** `http://mybackend.acme.corp:8080`
 
+### `threescale_cicd_apicast_policies_cors`
+
+Allows to enable the CORS policy onto APICast gateway. In case your API should support cross-origin
+and browser based invocations and you do not have included the `OPTIONS` verb on correct path into
+your OpenAPI Specification file...
+
+- **Syntax:** boolean `yes` or `no`
+- **Required:** no
+- **Default value:** `no`
+- **Example:** `yes` if you want to activate CORS policy on APICast
+
 ### `threescale_cicd_openapi_smoketest_operation`
 
 Defines the OpenAPI Specification method to use for smoke tests.
