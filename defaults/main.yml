@@ -50,6 +50,7 @@ threescale_cicd_openapi_smoketest_operation: '{{ threescale_cicd_openapi_file_co
 ##
 ## OpenAPI Specification File parsing
 ##
+threescale_cicd_api_basepath: '{{ threescale_cicd_openapi_file_content.basePath|default("") }}'
 threescale_cicd_api_base_system_name: '{{ lookup(''template'', ''openapi/generate_base_system_name.j2'') }}'
 threescale_cicd_api_system_name: '{{ lookup(''template'', ''openapi/generate_final_system_name.j2'') }}'
 threescale_cicd_private_base_url: '{{ lookup(''template'', ''openapi/private_base_url.j2'') }}'

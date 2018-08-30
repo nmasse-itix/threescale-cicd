@@ -404,6 +404,17 @@ Automatically defines the APIcast public URLs based on a scheme.
   threescale_cicd_apicast_production_endpoint=https://my-wonderful-service.acme.corp/
   ```
 
+### `threescale_cicd_api_basepath`
+
+Defines a `basePath` on which is deployed the backend API, overriding the `basePath` field
+of the OpenAPI Specification. The resulting value is used to define the mapping rules of the
+3scale API Gateway, prepending this base path to paths of different methods/operations.
+
+- **Syntax:** URI part with starting /
+- **Required:** no
+- **Default value:** the `basePath` field of the OpenAPI Specification.
+- **Examples:** `/api` or `/context`
+
 ### `threescale_cicd_api_backend_hostname`
 
 Defines the backend hostname, overriding the `host` field of the OpenAPI Specification.
