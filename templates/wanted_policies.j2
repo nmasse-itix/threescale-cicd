@@ -1,0 +1,5 @@
+{% set policies = [] %}
+{% if threescale_cicd_apicast_policies_cors %}
+{% do policies.append( {"name": "cors", "version": "builtin", "configuration": {"allow_credentials": true}, "enabled": true} ) %}
+{% endif %}
+{{ policies }}

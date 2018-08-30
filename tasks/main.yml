@@ -28,6 +28,9 @@
 # Update the proxy
 - import_tasks: steps/proxy.yml
 
+# Create or update policies
+- import_tasks: steps/policies.yml
+
 # Create or update application plans
 - import_tasks: steps/application_plans.yml
 

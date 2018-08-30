@@ -68,6 +68,16 @@ threescale_cicd_mapping_rules_to_delete: '{{ threescale_cicd_existing_mapping_ru
 threescale_cicd_mapping_rules_to_update: '{{ threescale_cicd_existing_mapping_rules.keys()|intersect(threescale_cicd_wanted_mapping_rules.keys()) }}'
 
 ##
+## Policies computation
+##
+## what we want
+threescale_cicd_wanted_policies: '{{ lookup(''template'', ''wanted_policies.j2'') }}'
+## what we have
+threescale_cicd_existing_policies: '{{ lookup(''template'', ''existing_policies.j2'') }}'
+# update the items that we want and we have
+threescale_cicd_policies_to_update: '{{ threescale_cicd_existing_policies|union(threescale_cicd_wanted_policies) }}'
+
+##
 ## 3scale API Payload definition
 ##
 threescale_cicd_update_proxy_payload: '{{ lookup(''template'', ''api-calls/update_proxy.j2'') }}'
@@ -77,6 +87,7 @@ threescale_cicd_update_method_payload: '{{ lookup(''template'', ''api-calls/upda
 threescale_cicd_create_method_payload: '{{ lookup(''template'', ''api-calls/create_method.j2'') }}'
 threescale_cicd_update_mapping_rule_payload: '{{ lookup(''template'', ''api-calls/update_mapping_rule.j2'') }}'
 threescale_cicd_create_mapping_rule_payload: '{{ lookup(''template'', ''api-calls/create_mapping_rule.j2'') }}'
+threescale_cicd_update_policies_payload: '{{ lookup(''template'', ''api-calls/update_policies.j2'') }}'
 threescale_cicd_update_application_plan_payload: '{{ lookup(''template'', ''api-calls/update_application_plan.j2'') }}'
 threescale_cicd_create_application_plan_payload: '{{ lookup(''template'', ''api-calls/create_application_plan.j2'') }}'
 threescale_cicd_find_application_payload: '{{ lookup(''template'', ''api-calls/find_application.j2'') }}'

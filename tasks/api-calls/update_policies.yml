@@ -1,0 +1,23 @@
+---
+
+- debug:
+    var: threescale_cicd_policies_to_update
+    verbosity: 1
+
+- debug:
+    var: threescale_cicd_update_policies_payload
+    verbosity: 1
+
+- name: Update the policies chain
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/policies.json
+    validate_certs: no
+    method: PUT
+    body: '{{ threescale_cicd_update_policies_payload }}'
+    status_code: 200
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

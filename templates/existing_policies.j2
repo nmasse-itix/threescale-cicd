@@ -1,0 +1,5 @@
+{% set policies = [] %}
+{% for value in threescale_cicd_existing_policies_details %}
+{% do policies.append( value ) %}
+{% endfor %}
+{{ policies }}
