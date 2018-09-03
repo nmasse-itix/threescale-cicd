@@ -1,0 +1,13 @@
+---
+
+- name: Retrieve existing policies from the 3scale Admin Portal
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/policies.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+  register: threescale_cicd_tmpresponse
+
+- set_fact:
+    threescale_cicd_existing_policies_details: '{{ threescale_cicd_tmpresponse.json|json_query(''policies_config[]'') }}'
+
+- include_tasks: "api-calls/update_policies.yml"
+  with_items: '{{ threescale_cicd_policies_to_update }}'

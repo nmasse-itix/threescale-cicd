@@ -1,0 +1,7 @@
+{%
+  set payload = [
+    'access_token=' ~ threescale_cicd_access_token|urlencode,
+    'policies_config=' ~ threescale_cicd_policies_to_update|to_json|urlencode
+  ]
+%}
+{{ payload|join("&") }}
