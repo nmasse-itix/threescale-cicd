@@ -36,13 +36,13 @@
 
 # Create or update the default application if smoke tests are needed
 - include_tasks: steps/default_application.yml
-  when: 'threescale_cicd_openapi_smoketest_path is defined and threescale_cicd_application_plans is defined'
+  when: 'threescale_cicd_openapi_smoketest_operation|length > 0 and threescale_cicd_application_plans is defined'
 
 # Run smoke tests on the staging gateway
 - include_tasks: steps/smoke_test.yml
   vars:
     threescale_cicd_smoke_test_env: staging
-  when: 'threescale_cicd_openapi_smoketest_path is defined and threescale_cicd_application_plans is defined'
+  when: 'threescale_cicd_openapi_smoketest_operation|length > 0 and threescale_cicd_application_plans is defined'
 
 # Promote to production
 - import_tasks: steps/promote.yml
@@ -51,7 +51,7 @@
 - include_tasks: steps/smoke_test.yml
   vars:
     threescale_cicd_smoke_test_env: production
-  when: 'threescale_cicd_openapi_smoketest_path is defined and threescale_cicd_application_plans is defined'
+  when: 'threescale_cicd_openapi_smoketest_operation|length > 0 and threescale_cicd_application_plans is defined'
 
 # Delete the metrics that are not needed anymore
 - import_tasks: steps/cleanup_metrics.yml

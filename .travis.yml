@@ -13,6 +13,8 @@ script:
 - ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-oidc.yml
 - ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-with-basePath.yml
 - ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-multi-environment.yml
+- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-with-smoketest-in-extra-vars.yml
+- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-without-smoketest.yml
 env:
   global:
     # travis encrypt "THREESCALE_INVENTORY=$(yaml2json tests/3scale-inventory.yaml|base64)"

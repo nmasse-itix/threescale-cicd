@@ -1,0 +1,16 @@
+---
+
+- name: Deploy the Echo API to a 3scale SaaS instance, with hosted APIcasts and no smoketests
+  hosts: threescale
+  gather_facts: no
+  vars:
+    # There is no "threescale_cicd_openapi_smoketest_operation" variable
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api-bare.yaml'
+  tasks:
+  # Deploy the service
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+  # Delete the service
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'cleanup'

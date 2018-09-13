@@ -48,7 +48,7 @@ threescale_cicd_default_application_appid: '{{ (threescale_cicd_default_applicat
 threescale_cicd_default_application_appsecret: '{{ (''secret'' ~ threescale_cicd_default_application_name ~ threescale_cicd_api_system_name ~ threescale_cicd_access_token)|hash(''sha1'') }}'
 
 # The OpenAPI Operation to use for the smoketest
-threescale_cicd_openapi_smoketest_operation: '{{ threescale_cicd_openapi_file_content|json_query(''paths.*.get[? "x-threescale-smoketests-operation" ].operationId|[0]'')|default("")|regex_replace(''[^0-9a-zA-Z_]+'', ''_'') }}'
+threescale_cicd_openapi_smoketest_operation: '{{ threescale_cicd_openapi_file_content|json_query(''paths.*.get[? "x-threescale-smoketests-operation" ].operationId'')|first|default("")|regex_replace(''[^0-9a-zA-Z_]+'', ''_'') }}'
 
 ##
 ## OpenAPI Specification File parsing

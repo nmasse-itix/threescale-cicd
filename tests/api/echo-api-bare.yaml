@@ -1,0 +1,33 @@
+swagger: '2.0'
+info:
+  title: 'Echo API'
+  description: 'A very simple API.'
+  contact:
+    name: 'Nicolas MASSE'
+    url: 'http://github.com/nmasse-itix'
+    email: nmasse@redhat.com
+  license:
+    name: 'MIT License'
+    url: 'https://opensource.org/licenses/MIT'
+  version: '1.0'
+host: 'echo-api.3scale.net'
+schemes:
+- http
+paths:
+  /:
+    get:
+      operationId: Echo
+      tags:
+        - echo
+      summary: 'Get an echo'
+      description: 'Get an echo from the server'
+      responses:
+        200:
+          description: 'An Echo from the server'
+security:
+- apikey: []
+securityDefinitions:
+  apikey:
+    name: api-key
+    in: header
+    type: apiKey
