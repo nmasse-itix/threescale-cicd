@@ -18,3 +18,16 @@
   delay: '{{ threescale_cicd_delay }}'
   # temporary fix for https://github.com/ansible/ansible/issues/28078
   until: 'threescale_cicd_tmpresponse is success'
+
+- name: Running smoke tests (CORS) !
+  uri:
+    url: '{{ threescale_cicd_smoke_test_url }}'
+    headers: '{{ threescale_cicd_smoke_test_headers|combine({ ''Origin'': threescale_cicd_smoke_test_url}) }}'
+    validate_certs: no
+    method: OPTIONS
+  register: threescale_cicd_tmpresponse
+  retries: '{{ threescale_cicd_retries }}'
+  delay: '{{ threescale_cicd_delay }}'
+  # temporary fix for https://github.com/ansible/ansible/issues/28078
+  until: 'threescale_cicd_tmpresponse is success'
+  when: 'threescale_cicd_apicast_policies_cors|bool'
