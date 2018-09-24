@@ -1,4 +1,4 @@
-{% if threescale_cicd_apicast_sandbox_endpoint|default("")|length > 0 or threescale_cicd_apicast_production_endpoint|default("")|length > 0 %}
+{% if inventory_hostname is match(".*[.]3scale[.]net") and (threescale_cicd_apicast_sandbox_endpoint|default("")|length > 0 or threescale_cicd_apicast_production_endpoint|default("")|length > 0) %}
 {% set deployment_type = "self_managed" %}
 {% else %}
 {% set deployment_type = "hosted" %}
