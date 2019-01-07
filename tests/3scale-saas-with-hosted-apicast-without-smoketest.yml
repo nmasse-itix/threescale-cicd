@@ -6,6 +6,7 @@
   vars:
     # There is no "threescale_cicd_openapi_smoketest_operation" variable
     threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api-bare.yaml'
+    threescale_cicd_api_base_system_name: echo_api_no_smoketests
   tasks:
   # Deploy the service
   - import_role:
