@@ -8,7 +8,7 @@
     threescale_cicd_openapi_file_format: 'JSON'
     threescale_cicd_api_backend_hostname: echo-api.3scale.net
     threescale_cicd_openapi_smoketest_operation: GET_beer
-    threescale_cicd_api_base_system_name: beer_catalog
+    threescale_cicd_api_base_system_name: beer_catalog_envs
   tasks:
   # Deploy in DEV
   - import_role:

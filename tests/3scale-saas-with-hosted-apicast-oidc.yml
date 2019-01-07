@@ -5,6 +5,7 @@
   gather_facts: no
   vars:
     threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api-oidc.yaml'
+    threescale_cicd_api_base_system_name: echo_api_oidc
   tasks:
   # Test a first deployment
   - import_role:
