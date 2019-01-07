@@ -21,6 +21,12 @@
       recurse: no
     register: templates
 
+  - name: Select the target CI platform using the THREESCALE_POOL environment variable
+    set_fact:
+      threescale_inventory: '{{ threescale_inventory[env|int] }}'
+    vars:
+      env: '{{ lookup(''env'', ''THREESCALE_POOL'') }}'
+
   - name: Process the Jinja2 templates
     template:
       src: '{{ item }}'

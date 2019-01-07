@@ -1,4 +1,4 @@
 *.retry
 inventory
-3scale-inventory.*
+3scale-inventory.yaml
 bin
