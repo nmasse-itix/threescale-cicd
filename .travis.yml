@@ -1,8 +1,12 @@
 language: python
-python:
-- '2.7'
+matrix:
+  include:
+  - python: '2.7'
+    env: ANSIBLE_VERSION=2.4.6
+  - python: '3.7'
+    env: ANSIBLE_VERSION=2.7.5
 install:
-- pip install ansible==2.4.0
+- pip install ansible==$ANSIBLE_VERSION
 - pip install jmespath
 # Pre-install go-swagger locally since it cannot be fetched from the Travis-CI
 # infrastructures because of rate limits imposed by GitHub on its API.

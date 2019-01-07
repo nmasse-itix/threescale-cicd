@@ -29,7 +29,7 @@ threescale_cicd_api_version_components: '{{ threescale_cicd_api_version.split(".
 threescale_cicd_api_version_major: '{{ threescale_cicd_api_version_components|first }}'
 threescale_cicd_api_security_requirements: '{{ threescale_cicd_openapi_file_content.security|default([]) }}'
 threescale_cicd_api_security_definitions: '{{ threescale_cicd_openapi_file_content.securityDefinitions|default({}) }}'
-threescale_cicd_api_security_scheme_name: '{{ threescale_cicd_api_security_requirements[0].keys()[0]|default(''none'') }}'
+threescale_cicd_api_security_scheme_name: '{{ (threescale_cicd_api_security_requirements|first|default(''{ "none": {} }'')).keys()|list|first }}'
 threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme_name] if threescale_cicd_api_security_scheme_name in threescale_cicd_api_security_definitions else {} }}'
 threescale_cicd_api_backend_version: '{{ threescale_cicd_backend_version_mapping[threescale_cicd_api_security_scheme.type] }}'
 threescale_cicd_backend_version_mapping:
