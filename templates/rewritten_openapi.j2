@@ -2,7 +2,12 @@
 {% set new_openapi = threescale_cicd_openapi_file_content %}
 {# Add the RH-SSO endpoints to the OpenAPI securityDefinitions #}
 {% if threescale_cicd_api_security_scheme.type == "oauth2" %}
-{% do security_definitions[threescale_cicd_api_security_scheme_name].update({ "authorizationUrl": threescale_cicd_sso_realm_endpoint ~ "/protocol/openid-connect/auth", "tokenUrl": threescale_cicd_sso_realm_endpoint ~ "/protocol/openid-connect/token" }) %}
+{% if threescale_cicd_api_security_scheme.flow == "implicit" or threescale_cicd_api_security_scheme.flow == "accessCode" %}
+{% do security_definitions[threescale_cicd_api_security_scheme_name].update({ "authorizationUrl": threescale_cicd_sso_realm_endpoint ~ "/protocol/openid-connect/auth" }) %}
+{% endif %}
+{% if threescale_cicd_api_security_scheme.flow == "password" or threescale_cicd_api_security_scheme.flow == "application" or threescale_cicd_api_security_scheme.flow == "accessCode" %}
+{% do security_definitions[threescale_cicd_api_security_scheme_name].update({ "tokenUrl": threescale_cicd_sso_realm_endpoint ~ "/protocol/openid-connect/token" }) %}
+{% endif %}
 {% endif %}
 {# Add the RH-SSO default scope to the OpenAPI securityDefinitions #}
 {% if threescale_cicd_api_security_scheme.type == "oauth2" and "scopes" not in threescale_cicd_api_security_scheme %}
