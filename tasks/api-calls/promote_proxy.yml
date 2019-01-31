@@ -3,6 +3,7 @@
 - debug:
     var: threescale_cicd_promote_proxy_payload
     verbosity: 1
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Promote to production
   uri:
@@ -13,6 +14,7 @@
     method: POST
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 201'
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Wait for a couple seconds
   pause:

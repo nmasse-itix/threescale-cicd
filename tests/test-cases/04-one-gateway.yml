@@ -1,0 +1,23 @@
+---
+
+- name: Deploy the Beer Catalog API with only one gateway
+  hosts: threescale
+  gather_facts: no
+  vars:
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api-contracts/beer-catalog-api.json'
+    threescale_cicd_openapi_file_format: 'JSON'
+    threescale_cicd_api_backend_hostname: echo-api.3scale.net
+    threescale_cicd_openapi_smoketest_operation: GET_beer
+    # Both Public Base URL are the same
+    threescale_cicd_apicast_sandbox_endpoint: '{{ threescale_cicd_apicast_production_endpoint }}'
+  tasks:
+  - name: Generate a random system_name for this test run
+    import_tasks: "common/random-system-name.yml"
+    
+  # Deploy the service
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+  # Delete the service
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'cleanup'

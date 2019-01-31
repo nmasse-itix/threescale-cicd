@@ -2,8 +2,25 @@
 ansible_connection=local
 
 [threescale]
-{{ threescale_inventory.threescale_hosted.admin_portal }}
+{{ test_environment.threescale.admin_portal }}
 
 [threescale:vars]
-threescale_cicd_access_token={{ threescale_inventory.threescale_hosted.access_token }}
-threescale_cicd_sso_issuer_endpoint=https://{{ threescale_inventory.sso.client_id }}:{{ threescale_inventory.sso.client_secret }}@{{ threescale_inventory.sso.host }}/auth/realms/{{ threescale_inventory.sso.realm }}
+threescale_cicd_access_token={{ test_environment.threescale.access_token }}
+threescale_cicd_sso_issuer_endpoint=https://{{ test_environment.sso.client_id }}:{{ test_environment.sso.client_secret }}@{{ test_environment.sso.host }}/auth/realms/{{ test_environment.sso.realm }}
+{% if 'wildcard_domain' in test_environment.threescale %}
+threescale_cicd_wildcard_domain={{ test_environment.threescale.wildcard_domain }}
+threescale_cicd_apicast_sandbox_endpoint='{% raw %}{{ threescale_cicd_default_apicast_scheme }}://{{ threescale_cicd_api_system_name|regex_replace("[^a-zA-Z0-9-]+", "-")|lower }}{{ threescale_cicd_default_staging_suffix }}.{{ threescale_cicd_wildcard_domain }}{% endraw %}'
+threescale_cicd_apicast_production_endpoint='{% raw %}{{ threescale_cicd_default_apicast_scheme }}://{{ threescale_cicd_api_system_name|regex_replace("[^a-zA-Z0-9-]+", "-")|lower }}{{ threescale_cicd_default_production_suffix }}.{{ threescale_cicd_wildcard_domain }}{% endraw %}'
+{% endif %}
+{% if 'apicast_staging_domain' in test_environment.threescale %}
+threescale_cicd_apicast_sandbox_endpoint='{% raw %}{{ threescale_cicd_default_apicast_scheme }}://{{ ((threescale_cicd_api_environment_name ~ "-" if threescale_cicd_api_environment_name is defined else "") ~ threescale_cicd_api_system_name)|regex_replace("[^a-zA-Z0-9-]+", "-")|lower }}{{ threescale_cicd_default_staging_suffix }}{% endraw %}.{{ test_environment.threescale.apicast_staging_domain }}'
+{% endif %}
+{% if 'apicast_production_domain' in test_environment.threescale %}
+threescale_cicd_apicast_production_endpoint='{% raw %}{{ threescale_cicd_default_apicast_scheme }}://{{ ((threescale_cicd_api_environment_name ~ "-" if threescale_cicd_api_environment_name is defined else "") ~ threescale_cicd_api_system_name)|regex_replace("[^a-zA-Z0-9-]+", "-")|lower }}{{ threescale_cicd_default_production_suffix }}{% endraw %}.{{ test_environment.threescale.apicast_production_domain }}'
+{% endif %}
+{% if test_environment.threescale.admin_portal is match(".*[.]3scale[.]net") %}
+# The 3scale SaaS environment is sometimes slow. Make sure to give enough time
+# to the SaaS environment to synchronise the OIDC clients in RH-SSO.
+threescale_cicd_delay=15
+threescale_cicd_retries=200
+{% endif %}

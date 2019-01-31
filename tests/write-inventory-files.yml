@@ -11,24 +11,13 @@
     when: 'threescale_inventory is not defined and lookup(''env'', ''THREESCALE_INVENTORY'')|length > 0'
 
   - set_fact:
-      threescale_inventory: '{{ lookup(''file'', ''3scale-inventory.yaml'')|from_yaml }}'
+      threescale_inventory: '{{ lookup(''file'', ''{{ playbook_dir }}/3scale-inventory.yaml'')|from_yaml }}'
     when: 'threescale_inventory is not defined'
-
-  - name: Find the Jinja2 templates to process
-    find:
-      paths: '{{ playbook_dir }}'
-      patterns: '*.j2'
-      recurse: no
-    register: templates
-
-  - name: Select the target CI platform using the THREESCALE_POOL environment variable
-    set_fact:
-      threescale_inventory: '{{ threescale_inventory[env|int] }}'
-    vars:
-      env: '{{ lookup(''env'', ''THREESCALE_POOL'') }}'
 
   - name: Process the Jinja2 templates
     template:
-      src: '{{ item }}'
-      dest: '{{ item|replace(".j2", "") }}'
-    with_items: '{{ templates.files|json_query(''[*].path'') }}'
+      src: '{{ playbook_dir }}/inventory.j2'
+      dest: '{{ playbook_dir }}/environments/{{ item.key }}'
+    with_dict: '{{ threescale_inventory }}'
+    vars:
+      test_environment: '{{ item.value }}'

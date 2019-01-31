@@ -17,6 +17,13 @@ threescale_cicd_application_plans:
   state: hidden
   name: Ansible Test Plan
 
+# Controls when to log sensitive information. Can be set to false for
+# production environments.
+#
+# By default, log sensitive information only when Ansible is called with
+# A verbosity level of at least one "-v".
+threescale_cicd_nolog: '{{ ansible_verbosity|default(0) == 0 }}'
+
 # A folder where to download dependencies, when required
 threescale_cicd_local_bin_path: '{{ playbook_dir }}/bin'
 

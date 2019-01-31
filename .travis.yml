@@ -2,28 +2,30 @@ language: python
 matrix:
   include:
   - python: '2.7'
-    env: ANSIBLE_VERSION=2.4.6 THREESCALE_POOL=0
+    env: ANSIBLE_VERSION=2.4.6 THREESCALE_ENV=saas
+  - python: '2.7'
+    env: ANSIBLE_VERSION=2.4.6 THREESCALE_ENV=saas-apicast-selfmanaged
+  - python: '2.7'
+    env: ANSIBLE_VERSION=2.4.6 THREESCALE_ENV=onpremise-2.3
   - python: '3.6'
-    env: ANSIBLE_VERSION=2.7.5 THREESCALE_POOL=1
+    env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=saas
+  - python: '3.6'
+    env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=saas-apicast-selfmanaged
+  - python: '3.6'
+    env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=onpremise-2.3
 install:
 - pip install ansible==$ANSIBLE_VERSION
 - pip install jmespath
 # Pre-install go-swagger locally since it cannot be fetched from the Travis-CI
 # infrastructures because of rate limits imposed by GitHub on its API.
-- mkdir tests/bin/ && curl -L -o tests/bin/swagger https://github.com/go-swagger/go-swagger/releases/download/0.16.0/swagger_linux_amd64 && chmod 755 tests/bin/swagger
+- mkdir -p tests/test-cases/bin/ && curl -L -o tests/test-cases/bin/swagger https://github.com/go-swagger/go-swagger/releases/download/0.16.0/swagger_linux_amd64 && chmod 755 tests/test-cases/bin/swagger
 script:
-- ansible-playbook tests/write-inventory-files.yml
-- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-apikey.yml
-- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-oidc.yml
-- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-with-basePath.yml
-- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-multi-environment.yml
-- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-with-smoketest-in-extra-vars.yml
-- ansible-playbook -v -i tests/inventory tests/3scale-saas-with-hosted-apicast-without-smoketest.yml
+- tests/run-tests.sh
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
 branches:
   except:
   - /^dev.*/
 before_install:
-- openssl aes-256-cbc -K $encrypted_7bf6043000c3_key -iv $encrypted_7bf6043000c3_iv
-  -in tests/3scale-inventory.yaml.enc -out tests/3scale-inventory.yaml -d
+# travis encrypt-file tests/3scale-inventory.yaml tests/3scale-inventory.yaml.enc
+- openssl aes-256-cbc -K $encrypted_5ba3c614c7e1_key -iv $encrypted_5ba3c614c7e1_iv -in tests/3scale-inventory.yaml.enc -out tests/3scale-inventory.yaml -d

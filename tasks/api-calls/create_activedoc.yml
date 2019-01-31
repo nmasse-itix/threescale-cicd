@@ -3,6 +3,7 @@
 - debug:
     var: threescale_cicd_create_activedoc_payload
     verbosity: 1
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Create the ActiveDocs
   uri:
@@ -13,6 +14,7 @@
     status_code: 201
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 201'
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_existing_activedocs: '{{ threescale_cicd_existing_activedocs|union([ threescale_cicd_tmpresponse.json.api_doc.system_name ]) }}'

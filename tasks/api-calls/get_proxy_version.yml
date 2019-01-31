@@ -5,6 +5,7 @@
     url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_staging_environment_name }}/latest.json?access_token={{ threescale_cicd_access_token|urlencode }}'
     validate_certs: no
   register: threescale_cicd_tmpresponse
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_staging_proxy_version: '{{ threescale_cicd_tmpresponse.json.proxy_config.version }}'
@@ -15,6 +16,7 @@
     validate_certs: no
     status_code: 200,404
   register: threescale_cicd_tmpresponse
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_production_proxy_version: '{{ threescale_cicd_tmpresponse.json.proxy_config.version if threescale_cicd_tmpresponse.status == 200 else ''NONE'' }}'

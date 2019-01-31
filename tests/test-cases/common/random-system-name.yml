@@ -1,0 +1,5 @@
+---
+
+- name: Generate a random system_name for this test run
+  set_fact:
+    threescale_cicd_api_base_system_name: 'testcase_{{ lookup(''password'', ''/dev/null length=12 chars=hexdigits'')|lower }}'

@@ -1,0 +1,106 @@
+---
+
+- name: Configure Red Hat SSO according to the 3scale inventory file
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_connection: local
+    sso_admin_username: admin
+    sso_admin_realm: master
+    sso_admin_client_id: admin-cli
+  tasks:
+  - assert:
+      that:
+      - sso_admin_password is defined
+      - sso_hostname is defined
+      msg: >
+        Please pass the SSO admin credentials as extra vars
+
+  - set_fact:
+      threescale_inventory: '{{ lookup(''env'', ''THREESCALE_INVENTORY'')|b64decode|from_json }}'
+    when: 'threescale_inventory is not defined and lookup(''env'', ''THREESCALE_INVENTORY'')|length > 0'
+
+  - set_fact:
+      threescale_inventory: '{{ lookup(''file'', ''{{ playbook_dir }}/../3scale-inventory.yaml'')|from_yaml }}'
+    when: 'threescale_inventory is not defined'
+
+  - name: Authenticate to RH-SSO
+    uri:
+      url: 'https://{{ sso_hostname }}/auth/realms/{{ sso_admin_realm }}/protocol/openid-connect/token'
+      body: 'grant_type=password&client_id={{ sso_admin_client_id|urlencode }}&username={{ sso_admin_username|urlencode }}&password={{ sso_admin_password|urlencode }}'
+      method: POST
+      validate_certs: no
+    register: auth_response
+    changed_when: false
+
+  - name: Delete the RH-SSO realm
+    uri:
+      url: 'https://{{ sso_hostname }}/auth/admin/realms/{{ item }}'
+      method: DELETE
+      validate_certs: no
+      headers:
+        Authorization: 'Bearer {{ access_token }}'
+      status_code: "204,404"
+    register: delete_realm_response
+    changed_when: delete_realm_response.status == 204
+    with_items: '{{ realms }}'
+    vars:
+      realms: '{{ threescale_inventory|json_query(''@.*[].sso.realm'')|unique }}'
+      access_token: '{{ auth_response.json.access_token }}'
+
+  - name: Create the RH-SSO realm
+    uri:
+      url: 'https://{{ sso_hostname }}/auth/admin/realms'
+      body: 
+        id: '{{ item }}'
+        enabled: true
+        realm: '{{ item }}'
+        displayName: '{{ item }}'
+        notBefore: 0
+        revokeRefreshToken: false
+        refreshTokenMaxReuse: 0
+        registrationAllowed: false
+        registrationEmailAsUsername: false
+        rememberMe: false
+        verifyEmail: false
+        loginWithEmailAllowed: false
+        duplicateEmailsAllowed: false
+        resetPasswordAllowed: false
+        bruteForceProtected: false
+        permanentLockout: false
+        roles:
+          realm: []
+        defaultRoles: []
+        requiredCredentials:
+        - password
+        scopeMappings: []
+        editUsernameAllowed: false
+        accessTokenLifespanForImplicitFlow: 86400 # 1 day
+        accessTokenLifespan: 86400 # 1 day
+        accessCodeLifespanUserAction: 86400 # 1 day
+        accessCodeLifespanLogin: 86400 # 1 day
+        accessCodeLifespan: 86400 # 1 day
+        ssoSessionIdleTimeout: 86400 # 1 day
+        ssoSessionMaxLifespan: 86400 # 1 day
+        offlineSessionIdleTimeout: 2592000 # 30 days
+        actionTokenGeneratedByAdminLifespan: 86400 # 1 day
+        actionTokenGeneratedByUserLifespan: 86400 # 1 day
+        sslRequired: none
+      body_format: json
+      method: POST
+      validate_certs: no
+      headers:
+        Authorization: 'Bearer {{ access_token }}'
+      status_code: "201,409"
+    register: create_realm_response
+    changed_when: create_realm_response.status == 201
+    with_items: '{{ realms }}'
+    vars:
+      realms: '{{ threescale_inventory|json_query(''@.*[].sso.realm'')|unique }}'
+      access_token: '{{ auth_response.json.access_token }}'
+
+  - include_tasks: "common/create-sso-client.yml"
+    with_items: '{{ clients }}'
+    vars:
+      clients: '{{ threescale_inventory|json_query(''@.*[].{client_id: sso.client_id, client_secret: sso.client_secret, realm: sso.realm, admin_portal: threescale.admin_portal }'')|unique }}'
+      access_token: '{{ auth_response.json.access_token }}'

@@ -11,6 +11,7 @@
     status_code: 200,404
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Wait for a couple seconds
   pause:

@@ -3,6 +3,7 @@
 - debug:
     var: threescale_cicd_update_application_payload
     verbosity: 1
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Update the application
   uri:
@@ -12,6 +13,7 @@
     body: '{{ threescale_cicd_update_application_payload }}'
     status_code: 200
   register: threescale_cicd_tmpresponse
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_default_application_details: '{{ threescale_cicd_tmpresponse.json.application }}'

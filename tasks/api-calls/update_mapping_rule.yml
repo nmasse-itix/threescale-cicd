@@ -3,6 +3,7 @@
 - debug:
     var: threescale_cicd_update_mapping_rule_payload
     verbosity: 1
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Update the mapping rule
   uri:
@@ -15,6 +16,7 @@
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
   vars:
     threescale_cicd_mapping_rule_id: '{{ threescale_cicd_existing_mapping_rules[threescale_cicd_mapping_rule] }}'
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Wait for a couple seconds
   pause:

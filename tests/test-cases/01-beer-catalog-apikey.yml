@@ -1,15 +1,17 @@
 ---
 
-- name: Deploy the Beer Catalog API to a 3scale SaaS instance, with hosted APIcasts
+- name: Deploy the Beer Catalog API with API Key
   hosts: threescale
   gather_facts: no
   vars:
-    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/beer-catalog-api.json'
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api-contracts/beer-catalog-api.json'
     threescale_cicd_openapi_file_format: 'JSON'
     threescale_cicd_api_backend_hostname: echo-api.3scale.net
     threescale_cicd_openapi_smoketest_operation: GET_beer
-    threescale_cicd_api_base_system_name: beer_catalog_apikey
   tasks:
+  - name: Generate a random system_name for this test run
+    import_tasks: "common/random-system-name.yml"
+    
   # Test a first deployment
   - import_role:
       name: 'nmasse-itix.threescale-cicd'

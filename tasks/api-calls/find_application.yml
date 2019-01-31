@@ -7,6 +7,7 @@
     method: GET
     status_code: 200,404
   register: threescale_cicd_tmpresponse
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_default_application_id: '{{ threescale_cicd_tmpresponse.json.application.id }}'

@@ -1,0 +1,77 @@
+---
+
+- name: Create the SSO client
+  keycloak_client: 
+    auth_keycloak_url: 'https://{{ sso_hostname }}/auth'
+    auth_password: '{{ sso_admin_password }}'
+    auth_realm: '{{ sso_admin_realm }}'
+    auth_username: '{{ sso_admin_username }}'
+    name: '{{ item.client_id }}'
+    description: 'Zync account for 3scale instance {{ item.admin_portal }}'
+    realm: '{{ item.realm }}'
+    enabled: true
+    state: present
+    protocol: openid-connect
+    client_id: '{{ item.client_id }}'
+    secret: '{{ item.client_secret }}'
+    direct_access_grants_enabled: false
+    full_scope_allowed: true
+    implicit_flow_enabled: false
+    public_client: false
+    service_accounts_enabled: true
+    standard_flow_enabled: false
+    validate_certs: no
+  register: create_client_response
+
+- name: Get the service account user tied to the client
+  uri:
+    url: 'https://{{ sso_hostname }}/auth/admin/realms/{{ item.realm }}/clients/{{ client_uuid }}/service-account-user'
+    validate_certs: no
+    headers:
+      Authorization: 'Bearer {{ access_token }}'
+  register: service_account_response
+  changed_when: false
+  vars:
+    client_uuid: '{{ create_client_response.end_state.id }}'
+
+- name: Get the "realm-management" client details
+  keycloak_client: 
+    auth_keycloak_url: 'https://{{ sso_hostname }}/auth'
+    auth_password: '{{ sso_admin_password }}'
+    auth_realm: '{{ sso_admin_realm }}'
+    auth_username: '{{ sso_admin_username }}'
+    realm: '{{ item.realm }}'
+    state: present
+    client_id: realm-management
+    validate_certs: no
+  check_mode: yes
+  register: realm_management_client_response
+
+- name: Get the role description of the "realm-management" client
+  uri:
+    url: 'https://{{ sso_hostname }}/auth/admin/realms/{{ item.realm }}/clients/{{ realm_management_client_uuid }}/roles/manage-clients'
+    validate_certs: no
+    headers:
+      Authorization: 'Bearer {{ access_token }}'
+  register: get_role_response
+  changed_when: false
+  vars:
+    realm_management_client_uuid: '{{ realm_management_client_response.existing.id }}'
+
+- name: Add the 'manage-clients' role mapping to the service account user
+  uri:
+    url: 'https://{{ sso_hostname }}/auth/admin/realms/{{ item.realm }}/users/{{ service_account_uuid }}/role-mappings/clients/{{ realm_management_client_uuid }}'
+    body: 
+    - '{{ manage_clients_role }}'
+    body_format: json
+    method: POST
+    validate_certs: no
+    headers:
+      Authorization: 'Bearer {{ access_token }}'
+    status_code: "204"
+  register: set_role_mapping_response
+  changed_when: set_role_mapping_response.status == 204
+  vars:
+    service_account_uuid: '{{ service_account_response.json.id }}'
+    realm_management_client_uuid: '{{ realm_management_client_response.existing.id }}'
+    manage_clients_role: '{{ get_role_response.json }}'

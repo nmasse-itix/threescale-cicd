@@ -1,13 +1,15 @@
 ---
 
-- name: Deploy the Echo API to a 3scale SaaS instance, with hosted APIcasts and smoketests in extra vars
+- name: Deploy the Echo API with smoketests in extra vars
   hosts: threescale
   gather_facts: no
   vars:
     threescale_cicd_openapi_smoketest_operation: Echo
-    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api-bare.yaml'
-    threescale_cicd_api_base_system_name: echo_api_bare_extra
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api-contracts/echo-api-bare.yaml'
   tasks:
+  - name: Generate a random system_name for this test run
+    import_tasks: "common/random-system-name.yml"
+    
   # Deploy the service
   - import_role:
       name: 'nmasse-itix.threescale-cicd'

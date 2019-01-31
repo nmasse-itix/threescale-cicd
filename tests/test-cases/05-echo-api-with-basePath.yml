@@ -1,12 +1,14 @@
 ---
 
-- name: Deploy the Echo API to a 3scale SaaS instance, with hosted APIcasts
+- name: Deploy the Echo API with a basepath
   hosts: threescale
   gather_facts: no
   vars:
-    threescale_cicd_openapi_file: '{{ playbook_dir }}/api/echo-api-with-basePath.yaml'
-    threescale_cicd_api_base_system_name: echo_api_with_basepath
+    threescale_cicd_openapi_file: '{{ playbook_dir }}/api-contracts/echo-api-with-basePath.yaml'
   tasks:
+  - name: Generate a random system_name for this test run
+    import_tasks: "common/random-system-name.yml"
+    
   # Test a first deployment
   - import_role:
       name: 'nmasse-itix.threescale-cicd'

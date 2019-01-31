@@ -22,9 +22,10 @@
 - name: Running smoke tests (CORS) !
   uri:
     url: '{{ threescale_cicd_smoke_test_url }}'
-    headers: '{{ threescale_cicd_smoke_test_headers|combine({ ''Origin'': threescale_cicd_smoke_test_url}) }}'
+    headers: '{{ threescale_cicd_smoke_test_headers|combine({ ''Origin'': threescale_cicd_smoke_test_url, ''Access-Control-Request-Method'': ''GET'' }) }}'
     validate_certs: no
     method: OPTIONS
+    status_code: 200,204
   register: threescale_cicd_tmpresponse
   retries: '{{ threescale_cicd_retries }}'
   delay: '{{ threescale_cicd_delay }}'

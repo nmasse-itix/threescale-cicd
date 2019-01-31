@@ -1,0 +1,56 @@
+---
+
+- name: Delete the Travis logs of a build
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_connection: local
+    travis_repo: nmasse-itix/threescale-cicd
+    travis_api: https://api.travis-ci.org
+  tasks:
+  - assert:
+      that:
+      - travis_token is defined
+      msg: >
+        Please pass your Travis Token in the 'travis_token' extra var
+
+  - assert:
+      that:
+      - travis_build is defined
+      msg: >
+        Please pass Travis build number in the 'travis_build' extra var
+
+  - name: Find Build
+    uri:
+      url: '{{ travis_api }}/repos/{{ travis_repo }}/builds?number={{ travis_build }}'
+      headers:
+        Authorization: "token {{ travis_token }}"
+    register: find_build_response
+    changed_when: false
+
+  - name: Get Build
+    uri:
+      url: '{{ travis_api }}/repos/{{ travis_repo }}/builds/{{ travis_build_id }}'
+      headers:
+        Authorization: "token {{ travis_token }}"
+    register: get_build_response
+    changed_when: false
+    vars:
+      travis_build_id: '{{ find_build_response.json|json_query(''[0].id'') }}'
+
+  - name: Delete logs
+    uri:
+      url: '{{ travis_api }}/jobs/{{ item }}/log'
+      headers:
+        Authorization: "token {{ travis_token }}"
+      body_format: form-urlencoded
+      body:
+        reason: "Logs removed because it contains sensitive data"
+      method: PATCH
+      status_code: "200,409"
+    register: delete_logs_response
+    changed_when: delete_logs_response.status == 200
+    with_items: '{{ travis_jobs }}'
+    vars:
+      travis_jobs: '{{ get_build_response.json|json_query(''@.matrix[].id'') }}'
+

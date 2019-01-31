@@ -3,6 +3,7 @@
 - debug:
     var: threescale_cicd_authenticate_to_keycloak_payload
     verbosity: 1
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Authenticate to RH-SSO
   uri:
@@ -16,7 +17,9 @@
   delay: '{{ threescale_cicd_delay }}'
   # temporary fix for https://github.com/ansible/ansible/issues/28078
   until: 'threescale_cicd_tmpresponse is success'
-
+  no_log: '{{ threescale_cicd_nolog }}'
+  
 - name: Extract the access_token
   set_fact:
     threescale_cicd_keycloak_access_token: '{{ threescale_cicd_tmpresponse.json |json_query("access_token") }}'
+  no_log: '{{ threescale_cicd_nolog }}'
