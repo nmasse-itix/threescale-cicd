@@ -4,6 +4,7 @@ To use this role from Jenkins, you will need to:
 
 - Create a custom Jenkins Slave image
 - Register this image in the Jenkins configuration
+- Install the Ansible Jenkins plugin
 - Commit your inventory and playbooks in a GIT repository
 - Create an Ansible Vault to store your 3scale Access Token and OIDC issuer endpoint
 - Create a Jenkins pipeline
@@ -83,3 +84,13 @@ oc tag jenkins-agent-ansible-26-rhel7:latest openshift/jenkins-agent-ansible-26-
   - **Arguments to pass to the command**: `${computer.jnlpmac} ${computer.name}`
   - **Allocate pseudo-TTY**: *unchecked*
 - Scroll down and click **Save**
+
+## Install the Ansible Jenkins plugin
+
+- Connect to your Jenkins instance
+- Click **Manage Jenkins** > **Manage Plugins**
+- Go to the **Available** tab
+- In the **Filter** text field, type `Ansible`
+- In the list, find the **Ansible plugin** and check its box in the **Enabled** column
+- Click **Install without restart**
+
