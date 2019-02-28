@@ -1,0 +1,23 @@
+---
+
+- name: Deploy an API to a 3scale SaaS instance, with self-managed APIcasts
+  hosts: threescale
+  gather_facts: no
+  pre_tasks:
+
+  - assert:
+      that:
+      - "git_repo is defined"
+
+  - name: Clone the git repo containing the API Definition
+    git:
+      repo: '{{ git_repo }}'
+      dest: '{{ playbook_dir }}/api'
+      version: '{{ git_branch|default(''master'') }}'
+    delegate_to: localhost
+
+  - set_fact:
+      threescale_cicd_openapi_file: '{{ playbook_dir }}/api/{{ openapi_file|default(''openapi-spec.yaml'') }}'
+
+  roles:
+  - nmasse-itix.threescale-cicd
