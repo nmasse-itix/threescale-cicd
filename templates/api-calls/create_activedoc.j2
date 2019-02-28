@@ -6,6 +6,7 @@
     'system_name=' ~ threescale_cicd_api_system_name|urlencode,
     'body=' ~ threescale_cicd_openapi_rewritten|to_nice_json|urlencode,
     'published=true',
+    'service_id=' ~ threescale_cicd_api_service_id|urlencode,    
   ]
 %}
 {{ payload|join("&") }}
