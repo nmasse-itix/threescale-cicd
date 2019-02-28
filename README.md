@@ -579,6 +579,7 @@ MIT
 
 - Nicolas Massé, Red Hat
 - Laurent Broudoux, Red Hat
+- Daria Mayorova, Red Hat
 
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-link]: https://raw.githubusercontent.com/nmasse-itix/threescale-cicd/master/LICENSE
