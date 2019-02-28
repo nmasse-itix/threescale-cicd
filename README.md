@@ -310,6 +310,8 @@ securityDefinitions:
   oidc:
     type: oauth2
     flow: accessCode
+    authorizationUrl: http://dummy/placeholder
+    tokenUrl: http://dummy/placeholder
     scopes:
       openid: Get an OpenID Connect token
 security:
