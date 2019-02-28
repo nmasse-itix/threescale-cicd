@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: deploy-3scale-api
+metadata:
+  annotations:
+    description: |-
+      Deploy an API to 3scale
+    openshift.io/display-name: Jenkins Pipeline to deploy an API to 3scale
+    tags: jenkins
+    template.openshift.io/documentation-url: https://github.com/nmasse-itix/threescale-cicd
+    template.openshift.io/long-description: Jenkins Pipeline to deploy an API to 3scale
+    template.openshift.io/provider-display-name: Nicolas Massé
+    template.openshift.io/support-url: https://github.com/nmasse-itix/threescale-cicd/issues
+  name: deploy-3scale-api
+parameters:
+objects:
+- kind: "BuildConfig"
+  apiVersion: "v1"
+  metadata:
+    name: "deploy-3scale-api"
+  spec:
+    source:
+      git:
+        uri: https://github.com/nmasse-itix/threescale-cicd.git
+    strategy:
+      type: "JenkinsPipeline"
+      jenkinsPipelineStrategy:
+        jenkinsfilePath: support/jenkins/Jenkinsfile
+        env:
+          - name: THREESCALE_CICD_ACCESS_TOKEN
+            value: 
+          - name: THREESCALE_CICD_SSO_ISSUER_ENDPOINT
+            value: 
+          - name: THREESCALE_PORTAL_HOSTNAME
+            value: 
+          - name: GIT_REPOSITORY
+            value: 
+          - name: GIT_BRANCH
+            value: 
+          - name: OPENAPI_FILE
+            value: 
+          - name: THREESCALE_CICD_PRIVATE_BASE_URL
+            value: 

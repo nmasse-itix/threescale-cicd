@@ -7,7 +7,7 @@
  */
 
 pipeline {
-    agent { label 'ansible' }
+    agent { label 'jenkins-ansible-slave.latest' }
 
     parameters {
         credentials(name: 'THREESCALE_CICD_ACCESS_TOKEN', description: 'The 3scale Access Token', credentialType: "Secret text", required: true)
@@ -16,7 +16,7 @@ pipeline {
         string(name: 'GIT_REPOSITORY', description: 'The GIT repository to checkout, containing the OpenAPI Specifications')
         string(name: 'GIT_BRANCH', description: 'The GIT branch or tag to checkout, containing the OpenAPI Specifications', defaultValue: 'master')
         string(name: 'OPENAPI_FILE', description: 'The path to the OpenAPI Specification within the GIT Repository')
-        string(name: 'THREESCALE_CICD_PRIVATE_BASE_URL', description: 'The 3scale private base URL')
+        string(name: 'THREESCALE_CICD_PRIVATE_BASE_URL', description: 'The 3scale private base URL', defaultValue: 'https://echo-api.3scale.net')
     }
 
     stages {

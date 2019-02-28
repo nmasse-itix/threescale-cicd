@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: jenkins-ansible-slave
+metadata:
+  annotations:
+    description: |-
+      A Jenkins slave that embeds Ansible 2.6 on RHEL
+    openshift.io/display-name: Jenkins Slave for Ansible
+    tags: jenkins
+    template.openshift.io/documentation-url: https://github.com/nmasse-itix/threescale-cicd
+    template.openshift.io/long-description: 
+    template.openshift.io/provider-display-name: Nicolas Massé
+    template.openshift.io/support-url: https://github.com/nmasse-itix/threescale-cicd/issues
+  name: jenkins-ansible-slave
+parameters:
+- name: OPENSHIFT_VERSION
+  value: v3.11
+  required: true
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/display-name: Jenkins Slave for Ansible
+    name: jenkins-ansible-slave
+  spec:
+    tags:
+    - name: latest
+      annotations:
+        role: jenkins-slave
+
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: jenkins-slave-base
+  spec:
+    tags:
+    - name: ${OPENSHIFT_VERSION}
+      referencePolicy:
+        type: Local
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/openshift3/jenkins-slave-base-rhel7:${OPENSHIFT_VERSION}
+      importPolicy:
+        scheduled: true
+
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: jenkins-ansible-slave
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: jenkins-ansible-slave:latest
+    runPolicy: Serial
+    source:
+      dockerfile: |-
+        FROM openshift3/jenkins-slave-base-rhel7:${OPENSHIFT_VERSION}
+
+        MAINTAINER Nicolas Masse <nmasse@redhat.com>
+
+        # Labels consumed by Red Hat build service
+        LABEL name="openshift3/jenkins-agent-ansible-26-rhel7" \
+              version="${OPENSHIFT_VERSION}" \
+              architecture="x86_64" \
+              io.k8s.display-name="Jenkins Agent Ansible" \
+              io.k8s.description="The jenkins agent ansible image has the Ansible engine on top of the jenkins slave base image." \
+              io.openshift.tags="openshift,jenkins,agent,ansible"
+
+        USER root
+        RUN yum install -y --enablerepo=rhel-7-server-ansible-2.6-rpms ansible && \
+            yum install -y --enablerepo=rhel-server-rhscl-7-rpms python27-python-pip && \
+            scl enable python27 "pip install --install-option='--install-purelib=/usr/lib/python2.7/site-packages/' jinja2" && \
+            yum clean all && \
+            rm -rf /var/cache/yum && \
+            chown -R 1001:0 $HOME && \
+            chmod -R g+rw $HOME
+
+        USER 1001
+      type: Dockerfile
+    strategy:
+      dockerStrategy:
+        from:
+          kind: ImageStreamTag
+          name: jenkins-slave-base:${OPENSHIFT_VERSION}
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+
