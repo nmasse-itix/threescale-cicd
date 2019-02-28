@@ -1,0 +1,61 @@
+---
+
+- name: Prepare the Ansible inventory
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - assert:
+      that: >
+        threescale_portal_hostname is defined 
+          or lookup('env', 'THREESCALE_PORTAL_HOSTNAME')|length > 0
+      msg: >
+        Please pass the hostname of your 3scale Admin Portal in the THREESCALE_PORTAL_HOSTNAME
+        environment variable or the threescale_portal_hostname extra variable.
+
+  - assert:
+      that: >
+        threescale_cicd_access_token is defined
+          or lookup('env', 'THREESCALE_CICD_ACCESS_TOKEN')|length > 0
+      msg: >
+        Please pass the access token of your 3scale Admin Portal in the THREESCALE_CICD_ACCESS_TOKEN
+        environment variable or the threescale_cicd_access_token extra variable.
+
+  # Generate dynamically a one host inventory
+  - add_host:
+      hostname: '{{ threescale_portal_hostname|default(lookup(''env'', ''THREESCALE_PORTAL_HOSTNAME'')) }}'
+      groups:
+      - threescale
+      threescale_cicd_access_token: '{{ threescale_cicd_access_token|default(lookup(''env'', ''THREESCALE_CICD_ACCESS_TOKEN'')) }}'
+
+- name: Deploy an API to 3scale
+  hosts: threescale
+  gather_facts: no
+  vars:
+    ansible_connection: local
+    parameter_whitelist:
+    - threescale_cicd_openapi_file
+    - threescale_cicd_openapi_file_format
+    - threescale_cicd_api_system_name
+    - threescale_cicd_api_base_system_name
+    - threescale_cicd_wildcard_domain
+    - threescale_cicd_api_basepath
+    - threescale_cicd_api_backend_hostname
+    - threescale_cicd_api_backend_scheme
+    - threescale_cicd_private_base_url
+    - threescale_cicd_apicast_policies_cors
+    - threescale_cicd_openapi_smoketest_operation
+    - threescale_cicd_api_environment_name
+    - threescale_cicd_validate_openapi
+    - threescale_cicd_apicast_sandbox_endpoint
+    - threescale_cicd_apicast_production_endpoint
+    - threescale_cicd_sso_issuer_endpoint
+  pre_tasks:
+  
+  - name: Accept threescale_cicd_* variables from environment variables
+    set_fact:
+        '{{ item|lower }}': '{{ lookup(''env'', item|upper) }}'
+    with_items: '{{ parameter_whitelist }}'
+    when: 'lookup(''env'', item|upper)|length > 0'
+
+  roles:
+  - nmasse-itix.threescale-cicd

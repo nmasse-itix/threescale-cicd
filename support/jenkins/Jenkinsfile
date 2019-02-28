@@ -1,0 +1,51 @@
+#!groovy
+
+/*
+ * This Jenkins Pipeline depends on the following plugins :
+ *  - Credentials Binding (https://plugins.jenkins.io/credentials-binding)
+ *  - Ansible (https://plugins.jenkins.io/ansible)
+ */
+
+pipeline {
+    agent any
+
+    parameters {
+        credentials(name: 'THREESCALE_CICD_ACCESS_TOKEN', description: 'The 3scale Access Token', credentialType: "Secret text", required: true),
+        credentials(name: 'THREESCALE_CICD_SSO_ISSUER_ENDPOINT', description: 'The SSO Issuer Endpoint when deploying an API with OpenID Connect', credentialType: "Secret text", required: false),
+        stringParam(name: 'THREESCALE_PORTAL_HOSTNAME', description: 'The 3scale Admin Portal hostname', required: true),
+        stringParam(name: 'GIT_REPOSITORY', description: 'The GIT repository to checkout, containing the OpenAPI Specifications', required: true),
+        stringParam(name: 'GIT_BRANCH', description: 'The GIT branch or tag to checkout, containing the OpenAPI Specifications', defaultValue: 'master', required: true),
+        stringParam(name: 'OPENAPI_FILE', description: 'The path to the OpenAPI Specification within the GIT Repository', required: true),
+        stringParam(name: 'THREESCALE_CICD_PRIVATE_BASE_URL', description: 'The 3scale private base URL', required: false)
+    }
+
+    node("ansible") {
+        sh 'ansible --version'
+        
+        stage("GIT Checkout") {
+            // Checkout the GIT repository containing the Ansible Playbook
+            checkout scm
+            
+            // Checkout the GIT repository containing the OpenAPI Specification to provision
+            checkout([ $class: 'GitSCM', 
+                       branches: [[name: '*/'+params.GIT_BRANCH]], 
+                       doGenerateSubmoduleConfigurations: false, 
+                       extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'support/jenkins/api']], 
+                       submoduleCfg: [], 
+                       userRemoteConfigs: [[url: params.GIT_REPOSITORY]]])
+        }
+
+        stage("Deploy an API to 3scale") {
+            ansiColor('xterm') {
+                withCredentials([ string(credentialsId: params.THREESCALE_CICD_ACCESS_TOKEN, variable: 'THREESCALE_CICD_ACCESS_TOKEN'), 
+                                  string(credentialsId: params.THREESCALE_CICD_SSO_ISSUER_ENDPOINT, variable: 'THREESCALE_CICD_SSO_ISSUER_ENDPOINT')]) {
+                    
+                    ansiblePlaybook(playbook: 'support/jenkins/deploy-api.yaml',
+                                    extraVars: [ threescale_cicd_openapi_file: 'api/' + params.OPENAPI_FILE ], 
+                                    /* extras: '-v', // verbose mode */
+                                    colorized: true)
+                }
+            }
+        }
+    }
+}
