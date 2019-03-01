@@ -19,7 +19,7 @@ Search for those placeholders to replace:
 Use the tower-cli to create the resources in Tower:
 
 ```sh
-tower-cli send -h ansible.app.itix.fr -u admin -p secret support/awx/tower-assets.yaml
+tower-cli send -h tower.hostname -u admin -p secret support/awx/tower-assets.yaml
 ```
 
 You can now provision an API from your favourite CI/CD tool. For example, from Jenkins you could use:
