@@ -4,6 +4,7 @@
  * This Jenkins Pipeline depends on the following plugins :
  *  - Credentials Binding (https://plugins.jenkins.io/credentials-binding)
  *  - Ansible (https://plugins.jenkins.io/ansible)
+ *  - Ansi Color (https://plugins.jenkins.io/ansicolor)
  */
 
 pipeline {

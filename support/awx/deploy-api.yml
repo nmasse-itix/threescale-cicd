@@ -1,6 +1,6 @@
 ---
 
-- name: Deploy an API to a 3scale SaaS instance, with self-managed APIcasts
+- name: Deploy an API to 3scale
   hosts: threescale
   gather_facts: no
   pre_tasks:

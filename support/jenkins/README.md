@@ -37,6 +37,8 @@ oc logs -f bc/jenkins-ansible-slave
 - Go to the **Available** tab
 - In the **Filter** text field, type `Ansible`
 - In the list, find the **Ansible plugin** and check its box in the **Enabled** column
+- In the **Filter** text field, type `Ansi Color`
+- In the list, find the **Ansi Color** and check its box in the **Enabled** column
 - Click **Install without restart**
 
 ## Create the pipeline that calls Ansible
