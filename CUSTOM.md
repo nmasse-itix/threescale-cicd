@@ -33,3 +33,28 @@ variable.
   - nmasse-itix.threescale-cicd
 ```
 
+## Provision a custom policy chain
+
+To provision a custom policy chain, you would need to store your custom policy
+in a file and reference it from the `threescale_cicd_policies_to_update` variable.
+
+**custom-policy-chain.json**:
+
+```json
+[
+  { "name": "cors", "version": "builtin", "configuration": {}, "enabled": true },
+  { "name": "headers", "version": "builtin", "configuration": { "request": [ { "op": "set", "header": "X-TEST", "value_type": "plain", "value": "foo" } ] }, "enabled": true },
+  { "name": "apicast", "version": "builtin", "configuration": {}, "enabled": true }
+]
+```
+
+**deploy-api.yaml**:
+
+```yaml
+- hosts: threescale
+  gather_facts: no
+  vars:
+    threescale_cicd_policies_to_update: '{{ lookup(''file'', playbook_dir ~ ''/custom-policy-chain.json'')|from_json }}'
+  roles:
+  - nmasse-itix.threescale-cicd
+```
