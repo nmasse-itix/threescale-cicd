@@ -58,3 +58,31 @@ in a file and reference it from the `threescale_cicd_policies_to_update` variabl
   roles:
   - nmasse-itix.threescale-cicd
 ```
+
+## Implement the url_rewriting policy
+
+If you want to deploy an API that is not yet implemented and would like to route requests to a mock such as [Microcks](http://microcks.github.io/), you will need to implement the `url_rewriting` policy.
+
+The `url_rewriting` policy will help you add a prefix to the URL before calling the Mock server:
+`GET /beers` becomes `GET /rest/Echo+API/1.0/beers`.
+
+**custom-policy-chain.json.j2**:
+
+```json
+[
+  { "name": "apicast", "version": "builtin", "configuration": {}, "enabled": true },
+  { "name": "url_rewriting", "version": "builtin", "configuration": { "query_args_commands": [], "commands": [ { "op": "sub", "regex": "^/", "replace": "/rest/{{ api_name|urlencode }}/{{ threescale_cicd_api_version }}/" } ] }, "enabled": true }
+]
+```
+
+**deploy-api.yaml**:
+
+```yaml
+- hosts: threescale
+  gather_facts: no
+  vars:
+    api_name: Echo API
+    threescale_cicd_policies_to_update: '{{ lookup(''template'', playbook_dir ~ ''/custom-policy-chain.json.j2'') }}'
+  roles:
+  - nmasse-itix.threescale-cicd
+```
