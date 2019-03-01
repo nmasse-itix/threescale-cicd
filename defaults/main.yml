@@ -1,16 +1,37 @@
 ---
+
+# By default, the OpenAPI file is read as YAML
 threescale_cicd_openapi_file_format: YAML
+
+# Controls how much time to wait for smoke tests to be OK and OIDC client to
+# appear in RH-SSO.
+#
+# Max time is threescale_cicd_delay x threescale_cicd_retries
 threescale_cicd_delay: 10
 threescale_cicd_retries: 50
+
+# How much time to wait between each write call to the 3scale Admin API
 threescale_cicd_throttling: 2
+
+# The two 3scale standard environments are named "sandbox" and "production"
 threescale_cicd_staging_environment_name: sandbox
 threescale_cicd_production_environment_name: production
+
+# The staging gateway has a "-staging" suffix...
 threescale_cicd_default_staging_suffix: -staging
+
+# ... while the production one does not.
 threescale_cicd_default_production_suffix: ""
+
+# APIcast instances are expected to be configured for TLS
 threescale_cicd_default_apicast_scheme: https
+
+# The OIDC scopes to use for smoke tests
 threescale_cicd_openapi_smoketest_default_scope: openid
 threescale_cicd_default_oauth_scopes:
   openid: Any OpenID Connect token
+
+# The application plans to create with each service
 threescale_cicd_application_plans:
 - system_name: ansible
   default: false
@@ -30,8 +51,22 @@ threescale_cicd_local_bin_path: '{{ playbook_dir }}/bin'
 # Enable the OpenAPI Specification validation
 threescale_cicd_validate_openapi: yes
 
-# APIcast policies
+##
+## APIcast policies
+##
+
+# CORS
 threescale_cicd_apicast_policies_cors: no
+
+##
+## Policies computation
+##
+## what we want
+threescale_cicd_wanted_policies: '{{ lookup(''template'', ''wanted_policies.j2'') }}'
+## what we have
+threescale_cicd_existing_policies: '{{ lookup(''template'', ''existing_policies.j2'') }}'
+# update the items that we want and we have
+threescale_cicd_policies_to_update: '{{ threescale_cicd_wanted_policies|union(threescale_cicd_existing_policies) }}'
 
 # APIcast public base URLs
 threescale_cicd_apicast_sandbox_endpoint: '{{ lookup(''template'', ''openapi/apicast_sandbox_endpoint.j2'') }}'
@@ -39,6 +74,7 @@ threescale_cicd_apicast_production_endpoint: '{{ lookup(''template'', ''openapi/
 
 # SSO Issuer Endpoint
 threescale_cicd_sso_issuer_endpoint: '{{ lookup(''template'', ''openapi/sso_issuer_endpoint.j2'') }}'
+
 ##
 ## Default Application (used for Smoke Tests)
 ##
@@ -64,3 +100,65 @@ threescale_cicd_api_basepath: '{{ threescale_cicd_openapi_file_content.basePath|
 threescale_cicd_api_base_system_name: '{{ lookup(''template'', ''openapi/generate_base_system_name.j2'') }}'
 threescale_cicd_api_system_name: '{{ lookup(''template'', ''openapi/generate_final_system_name.j2'') }}'
 threescale_cicd_private_base_url: '{{ lookup(''template'', ''openapi/private_base_url.j2'') }}'
+
+# Credentials are expected to be passed in HTTP headers unless stated otherwise
+# and only for API Keys
+threescale_cicd_api_credentials_location: '{{ ''headers'' if threescale_cicd_api_security_scheme.in|default(''header'') == ''header'' or threescale_cicd_api_security_scheme.type == ''oauth2'' else ''query'' }}'
+
+
+# The OpenAPI file to be pushed to 3scale as an ActiveDocs
+threescale_cicd_openapi_rewritten: '{{ lookup(''template'', ''rewritten_openapi.j2'') }}'
+
+# Compute the Keycloak Realm endpoint from the threescale_cicd_sso_issuer_endpoint
+threescale_cicd_sso_realm_endpoint: '{{ (threescale_cicd_sso_issuer_endpoint|urlsplit(''scheme'')) ~ ''://'' ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''hostname'')) ~ (threescale_cicd_sso_issuer_endpoint|urlsplit(''path'')) }}'
+
+# Compute the Keycloak REST Admin Endpoint from the threescale_cicd_sso_realm_endpoint
+threescale_cicd_sso_admin_endpoint: '{{ threescale_cicd_sso_realm_endpoint|replace(''/auth/realms/'', ''/auth/admin/realms/'') }}'
+
+##
+## OpenAPI Specification File parsing
+##
+threescale_cicd_openapi_file_content: '{{ lookup(''file'', threescale_cicd_openapi_file)|from_json if threescale_cicd_openapi_file_format|upper == ''JSON'' else lookup(''file'', threescale_cicd_openapi_file)|from_yaml }}'
+threescale_cicd_openapi_file_version: '{{ threescale_cicd_openapi_file_content.swagger }}'
+threescale_cicd_api_default_name: '{{ threescale_cicd_openapi_file_content.info.title|default("API") }}'
+threescale_cicd_api_name: '{{ lookup(''template'', ''openapi/service_name.j2'') }}'
+threescale_cicd_api_description: '{{ threescale_cicd_openapi_file_content.info.description|default("") }}'
+threescale_cicd_api_version: '{{ threescale_cicd_openapi_file_content.info.version|default("0.0.1") }}'
+threescale_cicd_api_version_components: '{{ threescale_cicd_api_version.split(".") }}'
+threescale_cicd_api_version_major: '{{ threescale_cicd_api_version_components|first }}'
+threescale_cicd_api_security_requirements: '{{ threescale_cicd_openapi_file_content.security|default([]) }}'
+threescale_cicd_api_security_definitions: '{{ threescale_cicd_openapi_file_content.securityDefinitions|default({}) }}'
+threescale_cicd_api_security_scheme_name: '{{ (threescale_cicd_api_security_requirements|first|default(''{ "none": {} }'')).keys()|list|first }}'
+threescale_cicd_api_security_scheme: '{{ threescale_cicd_api_security_definitions[threescale_cicd_api_security_scheme_name] if threescale_cicd_api_security_scheme_name in threescale_cicd_api_security_definitions else {} }}'
+
+##
+## Mapping Rules computation
+##
+# what we want
+threescale_cicd_wanted_mapping_rules: '{{ lookup(''template'', ''wanted_mapping_rules.j2'') }}'
+# what we have
+threescale_cicd_existing_mapping_rules: '{{ lookup(''template'', ''existing_mapping_rules.j2'') }}'
+
+##
+## 3scale API Payload definition
+##
+threescale_cicd_update_proxy_payload: '{{ lookup(''template'', ''api-calls/update_proxy.j2'') }}'
+threescale_cicd_update_service_payload: '{{ lookup(''template'', ''api-calls/update_service.j2'') }}'
+threescale_cicd_create_service_payload: '{{ lookup(''template'', ''api-calls/create_service.j2'') }}'
+threescale_cicd_update_method_payload: '{{ lookup(''template'', ''api-calls/update_method.j2'') }}'
+threescale_cicd_create_method_payload: '{{ lookup(''template'', ''api-calls/create_method.j2'') }}'
+threescale_cicd_update_mapping_rule_payload: '{{ lookup(''template'', ''api-calls/update_mapping_rule.j2'') }}'
+threescale_cicd_create_mapping_rule_payload: '{{ lookup(''template'', ''api-calls/create_mapping_rule.j2'') }}'
+threescale_cicd_update_policies_payload: '{{ lookup(''template'', ''api-calls/update_policies.j2'') }}'
+threescale_cicd_update_application_plan_payload: '{{ lookup(''template'', ''api-calls/update_application_plan.j2'') }}'
+threescale_cicd_create_application_plan_payload: '{{ lookup(''template'', ''api-calls/create_application_plan.j2'') }}'
+threescale_cicd_find_application_payload: '{{ lookup(''template'', ''api-calls/find_application.j2'') }}'
+threescale_cicd_update_application_payload: '{{ lookup(''template'', ''api-calls/update_application.j2'') }}'
+threescale_cicd_create_application_payload: '{{ lookup(''template'', ''api-calls/create_application.j2'') }}'
+threescale_cicd_authenticate_to_keycloak_payload: '{{ lookup(''template'', ''api-calls/keycloak/authenticate.j2'') }}'
+threescale_cicd_patch_keycloak_client_payload: '{{ lookup(''template'', ''api-calls/keycloak/patch_client.j2'') }}'
+threescale_cicd_smoke_test_headers: '{{ lookup(''template'', ''api-calls/smoke-test/headers.j2'') }}'
+threescale_cicd_smoke_test_url: '{{ lookup(''template'', ''api-calls/smoke-test/url.j2'') }}'
+threescale_cicd_promote_proxy_payload: '{{ lookup(''template'', ''api-calls/promote_proxy.j2'') }}'
+threescale_cicd_update_activedoc_payload: '{{ lookup(''template'', ''api-calls/update_activedoc.j2'') }}'
+threescale_cicd_create_activedoc_payload: '{{ lookup(''template'', ''api-calls/create_activedoc.j2'') }}'
