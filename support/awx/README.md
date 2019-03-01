@@ -40,3 +40,60 @@ ansibleTower towerServer: "tower",
              jobTemplate: "Deploy an API to 3scale",
              extraVars: JsonOutput.toJson(towerExtraVars)
 ```
+
+## Advanced usage
+
+If you need to customize the playbooks, the inventory or both, you can follow this guide:
+
+- define an inventory for each of your environments (dev, test, prod, etc.)
+- in those inventories, define a group (let's say `threescale`) containing
+  the 3scale Admin Portal(s) of this environment
+- set all the variables that depends on the environment (`threescale_cicd_wildcard_domain`, `threescale_cicd_api_environment_name`, etc.) as
+  group variables
+- create a playbook, committed in your GIT repository and reference it as a Project
+  in Tower
+- in this playbook, use the `assert` module to do some surface checks and set the variables that depends on the API being provisioned (such as `threescale_cicd_private_base_url`)
+- create the corresponding Job Template
+
+A very minimalistic playbook could be:
+
+```yaml
+---
+- name: Deploy an API on a 3scale instance
+  hosts: threescale
+  gather_facts: no
+  pre_tasks:
+  - assert:
+      that:
+      - "git_repo is defined"
+  - name: Clone the git repo containing the API Definition
+    git:
+      repo: '{{ git_repo }}'
+      dest: '{{ playbook_dir }}/api'
+      version: '{{ git_branch|default(''master'') }}'
+    delegate_to: localhost
+  - set_fact:
+      threescale_cicd_openapi_file: '{{ playbook_dir }}/api/{{ openapi_file|default(''openapi-spec.yaml'') }}'
+  roles:
+  - nmasse-itix.threescale-cicd
+```
+
+Then, make sure to reference this module in your `roles/requirements.yml` file:
+
+```yaml
+---
+- src: nmasse-itix.threescale-cicd
+  version: 0.0.4
+```
+
+You can reference a specific version like in this example or leave the `version`
+field out. This will pick the latest version available.
+
+**Caution:** once the role has been installed locally, it will never be
+automatically updated, even if you change the `version` field.
+
+To update this role to a more recent version use:
+
+```sh
+ansible-galaxy install -f nmasse-itix.threescale-cicd,0.0.5 -p roles/
+```
