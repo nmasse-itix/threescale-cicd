@@ -1,1 +1,89 @@
-../jenkins/deploy-api.yaml
+---
+
+- name: Prepare the Ansible inventory
+  hosts: localhost
+  gather_facts: no
+  vars:
+    # By default, the 3scale admin portal hostname and its access token are taken
+    # from a Kubernetes secret but they can be overriden from the command line
+    # as extra vars (-e threescale_portal_hostname=... -e threescale_cicd_access_token=...)
+    threescale_portal_hostname: 'lookup(''file'', ''/tmp/secrets/hostname'')'
+    threescale_cicd_access_token: 'lookup(''file'', ''/tmp/secrets/access_token'')'
+  tasks:
+  - assert:
+      that: threescale_portal_hostname is defined
+      msg: >
+        Please pass the hostname of your 3scale Admin Portal in "hostname" key of the
+        "3scale-admin-portal" secret.
+
+  - assert:
+      that: threescale_cicd_access_token is defined
+      msg: >
+        Please pass the access token of your 3scale Admin Portal in "access_token" key of the
+        "3scale-admin-portal" secret.
+
+  # Generate dynamically a one host inventory
+  - add_host:
+      hostname: '{{ threescale_portal_hostname }}'
+      groups:
+      - threescale
+      threescale_cicd_access_token: '{{ threescale_cicd_access_token }}'
+
+- name: Deploy an API to 3scale
+  hosts: threescale
+  gather_facts: no
+  vars:
+    # Support for OpenShift custom build
+    #
+    # The git_repository, git_context_dir and git_ref are taken from the OpenShift build definition
+    # but they can be overriden from the command line as extra vars (-e git_repository=... 
+    # -e git_ref=... -e git_context_dir=...). If you choose to pass those vars on the command line,
+    # you need to pass all those three variables.
+    build: '{{ lookup(''env'', ''BUILD'')|from_json }}'
+    git_repository: '{{ build.spec.source.git.uri }}'
+    git_context_dir: '{{ build.spec.source.git.contextDir|default('''') }}'
+    git_ref: '{{ build.spec.source.git.ref|default(''master'') }}'
+
+    # By default, the Red Hat SSO Issuer Endpoint are taken from a Kubernetes secret
+    # but they can be overriden from the command line as extra vars (-e threescale_cicd_sso_issuer_endpoint=...)
+    threescale_cicd_sso_issuer_endpoint: 'lookup(''file'', ''/tmp/secrets/sso_issuer_endpoint'')'
+
+    ansible_connection: local
+    parameter_whitelist:
+    - threescale_cicd_openapi_file
+    - threescale_cicd_openapi_file_format
+    - threescale_cicd_api_system_name
+    - threescale_cicd_api_base_system_name
+    - threescale_cicd_wildcard_domain
+    - threescale_cicd_api_basepath
+    - threescale_cicd_api_backend_hostname
+    - threescale_cicd_api_backend_scheme
+    - threescale_cicd_private_base_url
+    - threescale_cicd_apicast_policies_cors
+    - threescale_cicd_openapi_smoketest_operation
+    - threescale_cicd_api_environment_name
+    - threescale_cicd_validate_openapi
+    - threescale_cicd_apicast_sandbox_endpoint
+    - threescale_cicd_apicast_production_endpoint
+  pre_tasks:
+
+  - name: Clone the git repo containing the API Definition
+    git:
+      repo: '{{ git_repository }}'
+      dest: '{{ playbook_dir }}/api'
+      version: '{{ git_ref }}'
+    when: 'lookup(''env'', ''BUILD'')|length > 0 or git_repository|default('''')|length > 0'
+
+  - name: Accept threescale_cicd_* variables from environment variables
+    set_fact:
+        '{{ item|lower }}': '{{ lookup(''env'', item|upper) }}'
+    with_items: '{{ parameter_whitelist }}'
+    when: 'lookup(''env'', item|upper)|length > 0'
+
+  - name: Add the contextDir to the OpenAPI file path
+    set_fact:
+      threescale_cicd_openapi_file: '{{ playbook_dir }}/api/{{ git_context_dir }}/{{ threescale_cicd_openapi_file }}'
+    when: 'lookup(''env'', ''BUILD'')|length > 0 or git_repository|default('''')|length > 0'
+
+  roles:
+  - nmasse-itix.threescale-cicd

@@ -4,10 +4,13 @@ MAINTAINER Nicolas Masse <nmasse@redhat.com>
 
 LABEL io.k8s.display-name="Ansible role nmasse-itix.threescale-cicd" \
       io.k8s.description="Deploys an API to 3scale API Management." \
-      io.openshift.tags="ansible,api,3scale"
+      io.openshift.tags="3scale"
 
-ARG GIT_REPOSITORY=https://github.com/nmasse-itix/threescale-cicd.git
-ARG GIT_BRANCH=master
+ARG THREESCALE_CICD_GIT_REPOSITORY=https://github.com/nmasse-itix/threescale-cicd.git
+
+# This one is by convention used by the Docker Build services. 
+# See https://docs.docker.com/docker-hub/builds/advanced/
+ARG SOURCE_BRANCH=master
 
 RUN yum install -y centos-release-scl && \
     yum-config-manager --enable rhel-server-rhscl-7-rpms && \
@@ -16,7 +19,7 @@ RUN yum install -y centos-release-scl && \
     yum clean all && \
     rm -rf /var/cache/yum && \
     mkdir -p /opt/ansible/threescale-cicd && \
-    git clone -b ${GIT_BRANCH} -- ${GIT_REPOSITORY} /opt/ansible/threescale-cicd && \
+    git clone -b ${SOURCE_BRANCH} -- ${THREESCALE_CICD_GIT_REPOSITORY} /opt/ansible/threescale-cicd && \
     cd /opt/ansible/threescale-cicd/support/docker && mkdir api && \
     ansible-playbook install.yaml
 
