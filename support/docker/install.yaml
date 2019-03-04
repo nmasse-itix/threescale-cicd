@@ -1,0 +1,10 @@
+
+- name: Install the pre-requisites
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_connection: local
+  tasks:
+  - import_role:
+      name: 'nmasse-itix.threescale-cicd'
+      tasks_from: 'install_prerequisites'
