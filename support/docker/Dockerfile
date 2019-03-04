@@ -17,10 +17,11 @@ RUN yum install -y centos-release-scl && \
     rm -rf /var/cache/yum && \
     mkdir -p /opt/ansible/threescale-cicd && \
     git clone -b ${GIT_BRANCH} -- ${GIT_REPOSITORY} /opt/ansible/threescale-cicd && \
-    cd /opt/ansible/threescale-cicd/support/docker && \
+    cd /opt/ansible/threescale-cicd/support/docker && mkdir api && \
     ansible-playbook install.yaml
 
 WORKDIR /opt/ansible/threescale-cicd/support/docker
+VOLUME [ "/opt/ansible/threescale-cicd/support/docker/api" ]
 
 ENTRYPOINT [ "/usr/bin/ansible-playbook", "deploy-api.yaml" ]
 CMD [ ]
