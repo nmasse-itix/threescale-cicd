@@ -2,6 +2,7 @@
 
 # Make sure we have everything we need to run this playbook
 - import_tasks: steps/requirements.yml
+- import_tasks: steps/ansible_requirements.yml
 
 # Validate the API definition against the Swagger 2.0 / OAS 3.0
 - include_tasks: steps/validate_openapi.yml

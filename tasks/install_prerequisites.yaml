@@ -1,0 +1,6 @@
+---
+
+- import_tasks: steps/ansible_requirements.yml
+- include_tasks: steps/install_goswagger.yml
+  vars:
+    threescale_cicd_local_bin_path: /usr/local/bin
