@@ -7,7 +7,10 @@ LABEL io.k8s.display-name="OpenShift Custom builder for Ansible role nmasse-itix
       io.openshift.tags="builder,3scale"
 
 ARG THREESCALE_CICD_GIT_REPOSITORY=https://github.com/nmasse-itix/threescale-cicd.git
-ARG THREESCALE_CICD_GIT_BRANCH=master
+
+# This one is by convention used by the Docker Build services. 
+# See https://docs.docker.com/docker-hub/builds/advanced/
+ARG SOURCE_BRANCH=master
 
 RUN yum install -y centos-release-scl && \
     yum-config-manager --enable rhel-server-rhscl-7-rpms && \
@@ -16,7 +19,7 @@ RUN yum install -y centos-release-scl && \
     yum clean all && \
     rm -rf /var/cache/yum && \
     mkdir -p /opt/ansible/threescale-cicd && \
-    git clone -b ${THREESCALE_CICD_GIT_BRANCH} -- ${THREESCALE_CICD_GIT_REPOSITORY} /opt/ansible/threescale-cicd && \
+    git clone -b ${SOURCE_BRANCH} -- ${THREESCALE_CICD_GIT_REPOSITORY} /opt/ansible/threescale-cicd && \
     cd /opt/ansible/threescale-cicd/support/openshift && mkdir api && \
     ansible-playbook install.yaml
 
