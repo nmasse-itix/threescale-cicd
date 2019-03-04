@@ -1,5 +1,8 @@
 # Using this Ansible role from Jenkins
 
+You can use this Ansible role from Jenkins to include 3scale in your Continuous
+Deployment pipeline.
+
 To use this role from Jenkins, you will need to:
 
 - Create the Jenkins Slave image for Ansible
@@ -37,8 +40,6 @@ oc logs -f bc/jenkins-ansible-slave
 - Go to the **Available** tab
 - In the **Filter** text field, type `Ansible`
 - In the list, find the **Ansible plugin** and check its box in the **Enabled** column
-- In the **Filter** text field, type `Ansi Color`
-- In the list, find the **Ansi Color** and check its box in the **Enabled** column
 - Click **Install without restart**
 
 ## Create the pipeline that calls Ansible

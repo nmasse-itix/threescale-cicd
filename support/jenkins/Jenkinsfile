@@ -4,27 +4,75 @@
  * This Jenkins Pipeline depends on the following plugins :
  *  - Credentials Binding (https://plugins.jenkins.io/credentials-binding)
  *  - Ansible (https://plugins.jenkins.io/ansible)
- *  - Ansi Color (https://plugins.jenkins.io/ansicolor)
  */
 
 pipeline {
     agent { label 'jenkins-ansible-slave.latest' }
 
     parameters {
+        // Environment parameters
         credentials(name: 'THREESCALE_CICD_ACCESS_TOKEN', description: 'The 3scale Access Token', credentialType: "Secret text", required: true)
         credentials(name: 'THREESCALE_CICD_SSO_ISSUER_ENDPOINT', description: 'The SSO Issuer Endpoint when deploying an API with OpenID Connect', credentialType: "Secret text", required: false)
         string(name: 'THREESCALE_PORTAL_HOSTNAME', description: 'The 3scale Admin Portal hostname')
+        string(name: 'THREESCALE_CICD_PRIVATE_BASE_URL', description: 'The 3scale private base URL', defaultValue: 'https://echo-api.3scale.net')
+        string(name: 'THREESCALE_CICD_API_SYSTEM_NAME', description: 'Override the 3scale Service system_name')
+        string(name: 'THREESCALE_CICD_API_BASE_SYSTEM_NAME', description: 'Define the base name to compute the final system_name')
+        string(name: 'THREESCALE_CICD_WILDCARD_DOMAIN', description: 'Automatically defines the APIcast public URLs based on a scheme')
+        string(name: 'THREESCALE_CICD_API_ENVIRONMENT_NAME', description: 'Prefixes all services with an environment name to prevent any name collision when deploying the same API multiple times on the same 3scale instance')
+        string(name: 'THREESCALE_CICD_APICAST_SANDBOX_ENDPOINT', description: 'Defines the Public Staging Base URL')
+        string(name: 'THREESCALE_CICD_APICAST_PRODUCTION_ENDPOINT', description: 'Defines the Public Production Base URL')
+
+        // Details about the API to deploy
         string(name: 'GIT_REPOSITORY', description: 'The GIT repository to checkout, containing the OpenAPI Specifications')
         string(name: 'GIT_BRANCH', description: 'The GIT branch or tag to checkout, containing the OpenAPI Specifications', defaultValue: 'master')
         string(name: 'OPENAPI_FILE', description: 'The path to the OpenAPI Specification within the GIT Repository')
-        string(name: 'THREESCALE_CICD_PRIVATE_BASE_URL', description: 'The 3scale private base URL', defaultValue: 'https://echo-api.3scale.net')
+        booleanParam(name: 'THREESCALE_CICD_APICAST_POLICIES_CORS', description: 'Allows to enable the CORS policy onto APICast gateway', defaultValue: false)
+        string(name: 'THREESCALE_CICD_OPENAPI_SMOKETEST_OPERATION', description: 'Defines the OpenAPI Specification method to use for smoke tests')
+        string(name: 'THREESCALE_CICD_API_BASEPATH', description: 'Overrides the OpenAPI basePath field')
+        choice(name: 'THREESCALE_CICD_OPENAPI_FILE_FORMAT', description: 'Read the OpenAPI file as YAML or JSON', choices: [ "YAML", "JSON" ])
+
+        // Misc. params
+        booleanParam(name: 'THREESCALE_CICD_VALIDATE_OPENAPI', description: 'Validates the OpenAPI Specification file against the official schema', defaultValue: true)
+        booleanParam(name: 'ANSIBLE_VERBOSE', description: 'Run Ansible in verbose mode (-v)', defaultValue: false)
     }
 
     stages {
+        stage("Pre-requisites") {
+            steps {
+                script {
+                    if (paramIsEmpty(params.THREESCALE_CICD_ACCESS_TOKEN)) {
+                        currentBuild.result = 'ABORTED'
+                        error("The 3scale Access Token cannot be left empty")
+                    }
+                    if (paramIsEmpty(params.THREESCALE_PORTAL_HOSTNAME)) {
+                        currentBuild.result = 'ABORTED'
+                        error("The 3scale Admin Portal hostname cannot be left empty")
+                    }
+                    if (params.THREESCALE_PORTAL_HOSTNAME.startsWith("http://") || params.THREESCALE_PORTAL_HOSTNAME.startsWith("https://")) {
+                        currentBuild.result = 'ABORTED'
+                        error("The 3scale Admin Portal hostname must be the bare hostname (no http:// or https://)")
+                    }
+                    if (paramIsEmpty(params.GIT_REPOSITORY)) {
+                        currentBuild.result = 'ABORTED'
+                        error("The GIT Repository URL cannot be left empty")
+                    }
+                    if (paramIsEmpty(params.GIT_BRANCH)) {
+                        currentBuild.result = 'ABORTED'
+                        error("The GIT Repository Branch / Tag name cannot be left empty")
+                    }
+                    if (paramIsEmpty(params.OPENAPI_FILE)) {
+                        currentBuild.result = 'ABORTED'
+                        error("The path to the OpenAPI Specification within the GIT Repository cannot be left empty")
+                    }
+
+                }
+            }            
+        }
         stage("GIT Checkout") {
             steps {
                 // Checkout the GIT repository containing the Ansible Playbook
                 checkout scm
+                //git url: 'https://github.com/nmasse-itix/threescale-cicd.git'
                 
                 // Checkout the GIT repository containing the OpenAPI Specification to provision
                 checkout([ $class: 'GitSCM', 
@@ -38,17 +86,28 @@ pipeline {
 
         stage("Deploy an API to 3scale") {
             steps {
-                ansiColor('xterm') {
-                    withCredentials([ string(credentialsId: params.THREESCALE_CICD_ACCESS_TOKEN, variable: 'THREESCALE_CICD_ACCESS_TOKEN'), 
-                                    string(credentialsId: params.THREESCALE_CICD_SSO_ISSUER_ENDPOINT, variable: 'THREESCALE_CICD_SSO_ISSUER_ENDPOINT')]) {
-                        
-                        ansiblePlaybook(playbook: 'support/jenkins/deploy-api.yaml',
-                                        extraVars: [ threescale_cicd_openapi_file: 'api/' + params.OPENAPI_FILE ], 
-                                        /* extras: '-v', // verbose mode */
-                                        colorized: true)
+                script {
+                    // Generate the credential bindings:
+                    // - THREESCALE_CICD_ACCESS_TOKEN is mandatory
+                    // - THREESCALE_CICD_SSO_ISSUER_ENDPOINT is optional
+                    credentialBindings = [ string(credentialsId: params.THREESCALE_CICD_ACCESS_TOKEN, variable: 'THREESCALE_CICD_ACCESS_TOKEN') ];
+                    if (! paramIsEmpty(params.THREESCALE_CICD_SSO_ISSUER_ENDPOINT)) {
+                        credentialBindings.add(string(credentialsId: params.THREESCALE_CICD_SSO_ISSUER_ENDPOINT, variable: 'THREESCALE_CICD_SSO_ISSUER_ENDPOINT'))
                     }
+                }
+
+                // Run the Ansible Playbook
+                withCredentials(credentialBindings) {
+                    ansiblePlaybook(playbook: 'support/jenkins/deploy-api.yaml',
+                                    extraVars: [ threescale_cicd_openapi_file: 'api/' + params.OPENAPI_FILE ], 
+                                    extras: paramIsEmpty(params.ANSIBLE_VERBOSE) ? '' : '-v')
                 }
             }
         }
     }
+}
+
+def credentialBindings = null;
+def paramIsEmpty(param) {
+    return param == null || param == "";
 }
