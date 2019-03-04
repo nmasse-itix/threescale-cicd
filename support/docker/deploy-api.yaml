@@ -7,8 +7,8 @@
     # By default, the 3scale admin portal hostname and its access token are taken
     # from a Kubernetes secret but they can be overriden from the command line
     # as extra vars (-e threescale_portal_hostname=... -e threescale_cicd_access_token=...)
-    threescale_portal_hostname: 'lookup(''file'', ''/tmp/secrets/hostname'')'
-    threescale_cicd_access_token: 'lookup(''file'', ''/tmp/secrets/access_token'')'
+    threescale_portal_hostname: '{{ lookup(''file'', ''/tmp/secrets/hostname'') }}'
+    threescale_cicd_access_token: '{{ lookup(''file'', ''/tmp/secrets/access_token'') }}'
   tasks:
   - assert:
       that: threescale_portal_hostname is defined
@@ -46,7 +46,7 @@
 
     # By default, the Red Hat SSO Issuer Endpoint are taken from a Kubernetes secret
     # but they can be overriden from the command line as extra vars (-e threescale_cicd_sso_issuer_endpoint=...)
-    threescale_cicd_sso_issuer_endpoint: 'lookup(''file'', ''/tmp/secrets/sso_issuer_endpoint'')'
+    threescale_cicd_sso_issuer_endpoint: '{{ lookup(''file'', ''/tmp/secrets/sso_issuer_endpoint'') }}'
 
     ansible_connection: local
     parameter_whitelist:

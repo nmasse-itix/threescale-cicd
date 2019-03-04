@@ -36,10 +36,10 @@ parameters:
   description: The format (JSON or YAML) of the OpenAPI Specification file
   value: YAML
   required: false
-- name: 3SCALE_ADMIN_PORTAL_HOSTNAME
+- name: THREESCALE_ADMIN_PORTAL_HOSTNAME
   description: The hostname of the 3scale admin portal (bare hostname, without https://)
   required: true
-- name: 3SCALE_ADMIN_PORTAL_ACCESS_TOKEN
+- name: THREESCALE_ADMIN_PORTAL_ACCESS_TOKEN
   description: The 3scale access token
   required: true
 - name: SSO_ISSUER_ENDPOINT
@@ -54,6 +54,7 @@ objects:
   metadata:
     name: threescale-cicd
   spec:
+    tags:
     - name: latest
       annotations:
       referencePolicy:
@@ -90,6 +91,8 @@ objects:
         env:
         - name: THREESCALE_CICD_OPENAPI_FILE_FORMAT
           value: ${API_OPENAPI_FILE_FORMAT}
+        - name: THREESCALE_CICD_OPENAPI_FILE
+          value: ${API_OPENAPI_FILE}
         - name: THREESCALE_CICD_API_BASE_SYSTEM_NAME
           value: ${API_NAME}
         secrets:
@@ -105,6 +108,6 @@ objects:
     name: 3scale-admin-portal-${API_NAME}
   type: Opaque 
   stringData: 
-    hostname: ${3SCALE_ADMIN_PORTAL_HOSTNAME}
-    access_token: ${3SCALE_ADMIN_PORTAL_ACCESS_TOKEN}
+    hostname: ${THREESCALE_ADMIN_PORTAL_HOSTNAME}
+    access_token: ${THREESCALE_ADMIN_PORTAL_ACCESS_TOKEN}
     sso_issuer_endpoint: ${SSO_ISSUER_ENDPOINT}
