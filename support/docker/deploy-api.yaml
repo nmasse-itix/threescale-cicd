@@ -92,13 +92,6 @@
     - threescale_cicd_apicast_production_endpoint
     - threescale_cicd_sso_issuer_endpoint
   pre_tasks:
-  - name: Clone the git repo containing the API Definition
-    git:
-      repo: '{{ git_repository }}'
-      dest: '{{ playbook_dir }}/api'
-      version: '{{ git_ref }}'
-    when: 'git_repository|length > 0'
-
   - name: Accept threescale_cicd_* variables from environment variables (lowercase)
     set_fact:
         '{{ item|lower }}': '{{ lookup(''env'', item|lower) }}'
@@ -110,6 +103,13 @@
         '{{ item|lower }}': '{{ lookup(''env'', item|upper) }}'
     with_items: '{{ parameter_whitelist }}'
     when: 'lookup(''env'', item|upper)|length > 0'
+
+  - name: Clone the git repo containing the API Definition
+    git:
+      repo: '{{ git_repository }}'
+      dest: '{{ playbook_dir }}/api'
+      version: '{{ git_ref }}'
+    when: 'git_repository|length > 0'
 
   - name: Check if /tmp/secrets/sso_issuer_endpoint exists
     stat: 
