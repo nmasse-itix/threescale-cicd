@@ -17,7 +17,7 @@
     survey_spec: {}
   asset_type: job_template
   name: Deploy an API to 3scale
-  playbook: support/awx/deploy-api.yml
+  playbook: support/awx/deploy-api.yaml
   inventory: 3scale
   project: Deploy API to 3scale
   verbosity: 1

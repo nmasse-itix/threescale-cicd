@@ -4,30 +4,53 @@
   hosts: localhost
   gather_facts: no
   vars:
-    # By default, the 3scale admin portal hostname and its access token are taken
-    # from a Kubernetes secret but they can be overriden from the command line
+    # By default, the 3scale admin portal hostname and its access token are taken 
+    # from a Kubernetes secret but they can also be passed from the command line
     # as extra vars (-e threescale_portal_hostname=... -e threescale_cicd_access_token=...)
-    threescale_portal_hostname: '{{ lookup(''file'', ''/tmp/secrets/hostname'') }}'
-    threescale_cicd_access_token: '{{ lookup(''file'', ''/tmp/secrets/access_token'') }}'
+    # or from environment variables (THREESCALE_PORTAL_HOSTNAME=..., THREESCALE_CICD_ACCESS_TOKEN=...)
+    threescale_portal_hostname: '{{ lookup(''env'', ''THREESCALE_PORTAL_HOSTNAME'') if lookup(''env'', ''THREESCALE_PORTAL_HOSTNAME'')|length > 0 else lookup(''env'', ''threescale_portal_hostname'') }}'
+    threescale_cicd_access_token: '{{ lookup(''env'', ''THREESCALE_CICD_ACCESS_TOKEN'') if lookup(''env'', ''THREESCALE_CICD_ACCESS_TOKEN'')|length > 0 else lookup(''env'', ''threescale_cicd_access_token'') }}'
   tasks:
-  - assert:
-      that: threescale_portal_hostname is defined
-      msg: >
-        Please pass the hostname of your 3scale Admin Portal in "hostname" key of the
-        "3scale-admin-portal" secret.
+  - block:
+    - name: Check if /tmp/secrets/hostname exists
+      stat: 
+        path: /tmp/secrets/hostname
+      register: secrets
 
-  - assert:
-      that: threescale_cicd_access_token is defined
-      msg: >
-        Please pass the access token of your 3scale Admin Portal in "access_token" key of the
-        "3scale-admin-portal" secret.
+    - name: Fetch the threescale_portal_hostname variable from /tmp/secrets/hostname
+      set_fact:
+        threescale_portal_hostname: '{{ lookup(''file'', ''/tmp/secrets/hostname'') }}'
+      when: secrets.stat.exists
 
-  # Generate dynamically a one host inventory
-  - add_host:
-      hostname: '{{ threescale_portal_hostname }}'
-      groups:
-      - threescale
-      threescale_cicd_access_token: '{{ threescale_cicd_access_token }}'
+    - name: Check if /tmp/secrets/access_token exists
+      stat: 
+        path: /tmp/secrets/access_token
+      register: secrets
+
+    - name: Fetch the threescale_cicd_access_token variable from /tmp/secrets/access_token
+      set_fact:
+        threescale_cicd_access_token: '{{ lookup(''file'', ''/tmp/secrets/access_token'') }}'
+      when: secrets.stat.exists
+
+    - assert:
+        that: threescale_portal_hostname|length > 0
+        msg: >
+          Please pass the hostname of your 3scale Admin Portal in "hostname" key of the
+          "3scale-admin-portal" secret.
+
+    - assert:
+        that: threescale_cicd_access_token|length > 0
+        msg: >
+          Please pass the access token of your 3scale Admin Portal in "access_token" key of the
+          "3scale-admin-portal" secret.
+
+    # Generate dynamically a one host inventory
+    - add_host:
+        hostname: '{{ threescale_portal_hostname }}'
+        groups:
+        - threescale
+        threescale_cicd_access_token: '{{ threescale_cicd_access_token }}'
+  when: groups['threescale']|default([])|length == 0
 
 - name: Deploy an API to 3scale
   hosts: threescale
@@ -37,8 +60,8 @@
     #
     # The git_repository, git_context_dir and git_ref are taken from the OpenShift build definition
     # but they can be overriden from the command line as extra vars (-e git_repository=... 
-    # -e git_ref=... -e git_context_dir=...). If you choose to pass those vars on the command line,
-    # you need to pass all those three variables.
+    # -e git_ref=... -e git_context_dir=...) or environment variables (GIT_REPOSITORY=..., GIT_REF=...,
+    # GIT_CONTEXT_DIR=...)
     build: '{{ lookup(''env'', ''BUILD'')|from_json if lookup(''env'', ''BUILD'')|length > 0 else {} }}'
     git_repository: '{{ build.spec.source.git.uri if ''spec'' in build and ''uri'' in build.spec.source.git else '''' }}'
     git_context_dir: '{{ build.spec.source.git.contextDir if ''spec'' in build and ''contextDir'' in build.spec.source.git else '''' }}'
@@ -46,6 +69,9 @@
 
     ansible_connection: local
     parameter_whitelist:
+    - git_repository
+    - git_ref
+    - git_context_dir
     - threescale_cicd_openapi_file
     - threescale_cicd_openapi_file_format
     - threescale_cicd_api_system_name
@@ -61,20 +87,8 @@
     - threescale_cicd_validate_openapi
     - threescale_cicd_apicast_sandbox_endpoint
     - threescale_cicd_apicast_production_endpoint
+    - threescale_cicd_sso_issuer_endpoint
   pre_tasks:
-
-  - name: Check if /tmp/secrets/sso_issuer_endpoint exists
-    stat: 
-      path: /tmp/secrets/sso_issuer_endpoint
-    register: secrets
-
-  # By default, the Red Hat SSO Issuer Endpoint are taken from a Kubernetes secret
-  # but they can be overriden from the command line as extra vars (-e threescale_cicd_sso_issuer_endpoint=...)
-  - name: Fetch the threescale_cicd_sso_issuer_endpoint variable from /tmp/secrets/sso_issuer_endpoint
-    set_fact:
-      threescale_cicd_sso_issuer_endpoint: '{{ lookup(''file'', ''/tmp/secrets/sso_issuer_endpoint'') }}'
-    when: secrets.stat.exists
-
   - name: Clone the git repo containing the API Definition
     git:
       repo: '{{ git_repository }}'
@@ -82,7 +96,13 @@
       version: '{{ git_ref }}'
     when: 'git_repository|length > 0'
 
-  - name: Accept threescale_cicd_* variables from environment variables
+  - name: Accept threescale_cicd_* variables from environment variables (lowercase)
+    set_fact:
+        '{{ item|lower }}': '{{ lookup(''env'', item|lower) }}'
+    with_items: '{{ parameter_whitelist }}'
+    when: 'lookup(''env'', item|lower)|length > 0'
+
+  - name: Accept threescale_cicd_* variables from environment variables (uppercase)
     set_fact:
         '{{ item|lower }}': '{{ lookup(''env'', item|upper) }}'
     with_items: '{{ parameter_whitelist }}'
@@ -92,6 +112,16 @@
     set_fact:
       threescale_cicd_openapi_file: '{{ playbook_dir }}/api/{{ git_context_dir }}/{{ threescale_cicd_openapi_file }}'
     when: 'git_repository|length > 0'
+
+  - name: Check if /tmp/secrets/sso_issuer_endpoint exists
+    stat: 
+      path: /tmp/secrets/sso_issuer_endpoint
+    register: secrets
+
+  - name: Fetch the threescale_cicd_sso_issuer_endpoint variable from /tmp/secrets/sso_issuer_endpoint
+    set_fact:
+      threescale_cicd_sso_issuer_endpoint: '{{ lookup(''file'', ''/tmp/secrets/sso_issuer_endpoint'') }}'
+    when: secrets.stat.exists
 
   roles:
   - nmasse-itix.threescale-cicd
