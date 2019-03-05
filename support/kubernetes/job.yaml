@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: List
+items: 
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: deploy-3scale-api
+  spec:
+    template:
+      spec:
+        containers:
+        - name: threescale-cicd
+          image: docker.io/nmasse/threescale-cicd:stable
+          imagePullPolicy: Always
+          env:
+          - name: GIT_REPOSITORY
+            value: https://github.com/nmasse-itix/rhte-api.git
+          - name: GIT_REF
+            value: master
+          - name: OPENAPI_FILE
+            value: openapi-spec.yaml
+          - name: THREESCALE_CICD_OPENAPI_FILE_FORMAT
+            value: YAML
+          - name: THREESCALE_CICD_API_BASE_SYSTEM_NAME
+            value: echo-api
+          - name: THREESCALE_CICD_API_SYSTEM_NAME
+            value: ""
+          - name: THREESCALE_CICD_WILDCARD_DOMAIN
+            value: ""
+          - name: THREESCALE_CICD_API_BASEPATH
+            value: ""
+          - name: THREESCALE_CICD_PRIVATE_BASE_URL
+            value: https://echo-api.3scale.net
+          - name: THREESCALE_CICD_APICAST_POLICIES_CORS
+            value: "false"
+          - name: THREESCALE_CICD_OPENAPI_SMOKETEST_OPERATION
+            value: ""
+          - name: THREESCALE_CICD_API_ENVIRONMENT_NAME
+            value: ""
+          - name: THREESCALE_CICD_VALIDATE_OPENAPI
+            value: "true"
+          - name: THREESCALE_CICD_APICAST_SANDBOX_ENDPOINT
+            value: ""
+          - name: THREESCALE_CICD_APICAST_PRODUCTION_ENDPOINT
+            value: ""
+          volumeMounts:
+          - name: 3scale-secrets
+            mountPath: /tmp/secrets
+        restartPolicy: OnFailure
+        volumes:
+        - name: 3scale-secrets
+          secret:
+            secretName: 3scale-admin-portal
+    backoffLimit: 1
+    completions: 1
+    parallelism: 1
+
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: 3scale-admin-portal
+  type: Opaque 
+  stringData: 
+    hostname: TENANT-admin.3scale.net
+    access_token: "1234..5678"
+    sso_issuer_endpoint: ""
