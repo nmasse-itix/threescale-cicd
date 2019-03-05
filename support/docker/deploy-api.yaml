@@ -50,7 +50,7 @@
         groups:
         - threescale
         threescale_cicd_access_token: '{{ threescale_cicd_access_token }}'
-  when: groups['threescale']|default([])|length == 0
+    when: groups['threescale']|default([])|length == 0
 
 - name: Deploy an API to 3scale
   hosts: threescale
