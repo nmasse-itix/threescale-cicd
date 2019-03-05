@@ -23,8 +23,8 @@ pipeline {
         string(name: 'THREESCALE_CICD_APICAST_PRODUCTION_ENDPOINT', description: 'Defines the Public Production Base URL')
 
         // Details about the API to deploy
-        string(name: 'GIT_REPOSITORY', description: 'The GIT repository to checkout, containing the OpenAPI Specifications')
-        string(name: 'GIT_BRANCH', description: 'The GIT branch or tag to checkout, containing the OpenAPI Specifications', defaultValue: 'master')
+        string(name: 'API_REPOSITORY', description: 'The GIT repository to checkout, containing the OpenAPI Specifications')
+        string(name: 'API_BRANCH', description: 'The GIT branch or tag to checkout, containing the OpenAPI Specifications', defaultValue: 'master')
         string(name: 'OPENAPI_FILE', description: 'The path to the OpenAPI Specification within the GIT Repository')
         booleanParam(name: 'THREESCALE_CICD_APICAST_POLICIES_CORS', description: 'Allows to enable the CORS policy onto APICast gateway', defaultValue: false)
         string(name: 'THREESCALE_CICD_OPENAPI_SMOKETEST_OPERATION', description: 'Defines the OpenAPI Specification method to use for smoke tests')
@@ -52,11 +52,11 @@ pipeline {
                         currentBuild.result = 'ABORTED'
                         error("The 3scale Admin Portal hostname must be the bare hostname (no http:// or https://)")
                     }
-                    if (paramIsEmpty(params.GIT_REPOSITORY)) {
+                    if (paramIsEmpty(params.API_REPOSITORY)) {
                         currentBuild.result = 'ABORTED'
                         error("The GIT Repository URL cannot be left empty")
                     }
-                    if (paramIsEmpty(params.GIT_BRANCH)) {
+                    if (paramIsEmpty(params.API_BRANCH)) {
                         currentBuild.result = 'ABORTED'
                         error("The GIT Repository Branch / Tag name cannot be left empty")
                     }
@@ -76,11 +76,11 @@ pipeline {
                 
                 // Checkout the GIT repository containing the OpenAPI Specification to provision
                 checkout([ $class: 'GitSCM', 
-                        branches: [[name: '*/'+params.GIT_BRANCH]], 
+                        branches: [[name: '*/'+params.API_BRANCH]],
                         doGenerateSubmoduleConfigurations: false, 
                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'support/jenkins/api']], 
                         submoduleCfg: [], 
-                        userRemoteConfigs: [[url: params.GIT_REPOSITORY]]])
+                        userRemoteConfigs: [[url: params.API_REPOSITORY]]])
             }
         }
 
@@ -99,7 +99,7 @@ pipeline {
                 // Run the Ansible Playbook
                 withCredentials(credentialBindings) {
                     ansiblePlaybook(playbook: 'support/jenkins/deploy-api.yaml',
-                                    extraVars: [ threescale_cicd_openapi_file: 'api/' + params.OPENAPI_FILE ], 
+                                    extraVars: [ openapi_file: params.OPENAPI_FILE ],
                                     extras: paramIsEmpty(params.ANSIBLE_VERBOSE) ? '' : '-v')
                 }
             }
