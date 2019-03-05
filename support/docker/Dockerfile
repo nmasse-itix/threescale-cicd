@@ -12,7 +12,7 @@ ARG THREESCALE_CICD_GIT_REPOSITORY=https://github.com/nmasse-itix/threescale-cic
 # See https://docs.docker.com/docker-hub/builds/advanced/
 ARG SOURCE_BRANCH=master
 
-RUN yum install -y centos-release-scl && \
+RUN yum --enablerepo=extras install -y epel-release centos-release-scl && \
     yum-config-manager --enable rhel-server-rhscl-7-rpms && \
     yum install -y ansible git python27-python-pip && \
     scl enable python27 "pip install --install-option='--install-purelib=/usr/lib/python2.7/site-packages/' jinja2" && \

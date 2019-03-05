@@ -39,14 +39,10 @@
     # but they can be overriden from the command line as extra vars (-e git_repository=... 
     # -e git_ref=... -e git_context_dir=...). If you choose to pass those vars on the command line,
     # you need to pass all those three variables.
-    build: '{{ lookup(''env'', ''BUILD'')|from_json }}'
-    git_repository: '{{ build.spec.source.git.uri }}'
-    git_context_dir: '{{ build.spec.source.git.contextDir|default('''') }}'
-    git_ref: '{{ build.spec.source.git.ref|default(''master'') }}'
-
-    # By default, the Red Hat SSO Issuer Endpoint are taken from a Kubernetes secret
-    # but they can be overriden from the command line as extra vars (-e threescale_cicd_sso_issuer_endpoint=...)
-    threescale_cicd_sso_issuer_endpoint: '{{ lookup(''file'', ''/tmp/secrets/sso_issuer_endpoint'') }}'
+    build: '{{ lookup(''env'', ''BUILD'')|from_json if lookup(''env'', ''BUILD'')|length > 0 else {} }}'
+    git_repository: '{{ build.spec.source.git.uri if ''spec'' in build and ''uri'' in build.spec.source.git else '''' }}'
+    git_context_dir: '{{ build.spec.source.git.contextDir if ''spec'' in build and ''contextDir'' in build.spec.source.git else '''' }}'
+    git_ref: '{{ build.spec.source.git.ref if ''spec'' in build and ''ref'' in build.spec.source.git else ''master'' }}'
 
     ansible_connection: local
     parameter_whitelist:
@@ -67,12 +63,24 @@
     - threescale_cicd_apicast_production_endpoint
   pre_tasks:
 
+  - name: Check if /tmp/secrets/sso_issuer_endpoint exists
+    stat: 
+      path: /tmp/secrets/sso_issuer_endpoint
+    register: secrets
+
+  # By default, the Red Hat SSO Issuer Endpoint are taken from a Kubernetes secret
+  # but they can be overriden from the command line as extra vars (-e threescale_cicd_sso_issuer_endpoint=...)
+  - name: Fetch the threescale_cicd_sso_issuer_endpoint variable from /tmp/secrets/sso_issuer_endpoint
+    set_fact:
+      threescale_cicd_sso_issuer_endpoint: '{{ lookup(''file'', ''/tmp/secrets/sso_issuer_endpoint'') }}'
+    when: secrets.stat.exists
+
   - name: Clone the git repo containing the API Definition
     git:
       repo: '{{ git_repository }}'
       dest: '{{ playbook_dir }}/api'
       version: '{{ git_ref }}'
-    when: 'lookup(''env'', ''BUILD'')|length > 0 or git_repository|default('''')|length > 0'
+    when: 'git_repository|length > 0'
 
   - name: Accept threescale_cicd_* variables from environment variables
     set_fact:
@@ -83,7 +91,7 @@
   - name: Add the contextDir to the OpenAPI file path
     set_fact:
       threescale_cicd_openapi_file: '{{ playbook_dir }}/api/{{ git_context_dir }}/{{ threescale_cicd_openapi_file }}'
-    when: 'lookup(''env'', ''BUILD'')|length > 0 or git_repository|default('''')|length > 0'
+    when: 'git_repository|length > 0'
 
   roles:
   - nmasse-itix.threescale-cicd
