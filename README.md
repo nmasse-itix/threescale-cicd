@@ -515,11 +515,11 @@ This role has no dependencies on other roles, but it has dependencies on:
 - Jinja (at least version 2.8)
 - 3scale API Management 2.3
 
-## Support for AWX / Tower and Jenkins
+## Integration with other technologies
 
-You can use this role in an AWX or Tower installation by following [this guide](support/awx/).
-
-You could also use it directly from a Jenkins pipeline by following [this guide](support/jenkins/).
+Support for major technologies is available [in the support folder](support).
+There is support for Jenkins, Kubernetes, Docker, OpenShift, including a
+[pre-built docker image](https://hub.docker.com/r/nmasse/threescale-cicd).
 
 ## License
 
