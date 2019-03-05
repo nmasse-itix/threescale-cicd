@@ -126,7 +126,7 @@ objects:
         env:
         - name: THREESCALE_CICD_OPENAPI_FILE_FORMAT
           value: ${API_OPENAPI_FILE_FORMAT}
-        - name: THREESCALE_CICD_OPENAPI_FILE
+        - name: OPENAPI_FILE
           value: ${API_OPENAPI_FILE}
         - name: THREESCALE_CICD_API_BASE_SYSTEM_NAME
           value: ${API_NAME}

@@ -28,7 +28,7 @@ You can now provision an API from your favourite CI/CD tool. For example, from J
 def towerExtraVars = [
     git_repository: "https://github.com/nmasse-itix/rhte-api.git",
     git_ref: "master",
-    threescale_cicd_openapi_file: "openapi-spec.yaml",
+    openapi_file: "openapi-spec.yaml",
     threescale_cicd_api_base_system_name: "event_api",
     threescale_cicd_private_base_url: "https://echo-api.3scale.net",
     threescale_cicd_api_environment_name: "prod",

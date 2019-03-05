@@ -66,13 +66,16 @@
     git_repository: '{{ build.spec.source.git.uri if ''spec'' in build and ''uri'' in build.spec.source.git else '''' }}'
     git_context_dir: '{{ build.spec.source.git.contextDir if ''spec'' in build and ''contextDir'' in build.spec.source.git else '''' }}'
     git_ref: '{{ build.spec.source.git.ref if ''spec'' in build and ''ref'' in build.spec.source.git else ''master'' }}'
+    openapi_file: openapi-spec.yaml
 
     ansible_connection: local
+    threescale_cicd_openapi_file: '{{ playbook_dir ~ "/api/" ~ git_context_dir ~ "/" ~ openapi_file if git_repository|length > 0 else playbook_dir ~ "/api/" ~ openapi_file }}'
     parameter_whitelist:
     - git_repository
     - git_ref
     - git_context_dir
-    - threescale_cicd_openapi_file
+    - openapi_file # relative path to the OpenAPI file
+    - threescale_cicd_openapi_file # absolute path to the OpenAPI file
     - threescale_cicd_openapi_file_format
     - threescale_cicd_api_system_name
     - threescale_cicd_api_base_system_name
@@ -107,11 +110,6 @@
         '{{ item|lower }}': '{{ lookup(''env'', item|upper) }}'
     with_items: '{{ parameter_whitelist }}'
     when: 'lookup(''env'', item|upper)|length > 0'
-
-  - name: Add the contextDir to the OpenAPI file path
-    set_fact:
-      threescale_cicd_openapi_file: '{{ playbook_dir }}/api/{{ git_context_dir }}/{{ threescale_cicd_openapi_file }}'
-    when: 'git_repository|length > 0'
 
   - name: Check if /tmp/secrets/sso_issuer_endpoint exists
     stat: 
