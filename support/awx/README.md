@@ -1,5 +1,18 @@
 # Using this Ansible role from AWX / Ansible Tower
 
+Ansible has powerful concepts to separate the HOW (how to deploy an API) from
+the WHERE (where to deploy an API). Ansible Tower / AWX can push this to the
+next level by enforcing RBAC, having audit logs and providing to developers
+*Deploy an API to 3scale* as-a-service.
+
+You can have a look at those two blog posts that present this approach in greater
+details:
+
+- [Integrating Ansible with Jenkins in a CI/CD process](https://www.redhat.com/en/blog/integrating-ansible-jenkins-cicd-process)
+- [Take Ansible and Jenkins Integration to the next level: CI/CD with Ansible Tower](https://www.redhat.com/en/blog/take-ansible-and-jenkins-integration-next-level-cicd-ansible-tower)
+
+## Setup
+
 Install the Tower CLI:
 
 ```sh
@@ -83,7 +96,7 @@ Then, make sure to reference this module in your `roles/requirements.yml` file:
 ```yaml
 ---
 - src: nmasse-itix.threescale-cicd
-  version: 0.0.4
+  version: 1.1.0
 ```
 
 You can reference a specific version like in this example or leave the `version`
@@ -95,5 +108,5 @@ automatically updated, even if you change the `version` field.
 To update this role to a more recent version use:
 
 ```sh
-ansible-galaxy install -f nmasse-itix.threescale-cicd,0.0.5 -p roles/
+ansible-galaxy install -f nmasse-itix.threescale-cicd,1.1.0 -p roles/
 ```
