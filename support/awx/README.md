@@ -11,6 +11,8 @@ details:
 - [Integrating Ansible with Jenkins in a CI/CD process](https://www.redhat.com/en/blog/integrating-ansible-jenkins-cicd-process)
 - [Take Ansible and Jenkins Integration to the next level: CI/CD with Ansible Tower](https://www.redhat.com/en/blog/take-ansible-and-jenkins-integration-next-level-cicd-ansible-tower)
 
+There is also a webinar showing this approach as a demo: [Take Ansible and Jenkins integration to the next level: CI/CD with Ansible Tower](https://www.redhat.com/en/events/webinar/take-ansible-and-jenkins-integration-next-level-cicd-ansible-tower).
+
 ## Setup
 
 Install the Tower CLI:
