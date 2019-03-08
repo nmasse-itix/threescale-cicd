@@ -86,3 +86,23 @@ The `url_rewriting` policy will help you add a prefix to the URL before calling 
   roles:
   - nmasse-itix.threescale-cicd
 ```
+
+## Choose the Account in which the smoke test application is created
+
+By default, the playbook will create a client application in the default first
+account of your tenant (the Account that contains "john"). But you can choose
+the Account to use by overriding the `threescale_cicd_default_account_id`
+variable.
+
+```yaml
+- hosts: threescale
+  gather_facts: no
+  vars:
+    threescale_cicd_default_account_id: '2445582535751'
+  roles:
+  - nmasse-itix.threescale-cicd
+```
+
+You can find the Account id by navigating to **Audience** > **Accounts** >
+**Listing** and clicking on the Account of your choice. The ID is the
+last part of the URL (`/buyers/accounts/{id}`).
