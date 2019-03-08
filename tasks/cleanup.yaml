@@ -5,17 +5,19 @@
     url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}.json?access_token={{ threescale_cicd_access_token|urlencode }}'
     validate_certs: no
     method: DELETE
-    status_code: 200
+    status_code: 200,404
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
   when: 'threescale_cicd_api_service_id is defined'
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Delete the created ActiveDocs
   uri:
     url: 'https://{{ inventory_hostname }}/admin/api/active_docs/{{ threescale_cicd_api_activedocs_id }}.json?access_token={{ threescale_cicd_access_token|urlencode }}'
     validate_certs: no
     method: DELETE
-    status_code: 200
+    status_code: 200,404
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
   when: 'threescale_cicd_api_activedocs_id is defined'
+  no_log: '{{ threescale_cicd_nolog }}'
