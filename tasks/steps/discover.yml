@@ -6,6 +6,7 @@
     validate_certs: no
   register: threescale_cicd_tmpresponse
   when: threescale_cicd_existing_services is not defined
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_existing_services: '{{ threescale_cicd_tmpresponse.json|json_query(''services[*].service.system_name'') }}'
@@ -27,6 +28,7 @@
     validate_certs: no
   register: threescale_cicd_tmpresponse
   when: threescale_cicd_api_system_name in threescale_cicd_existing_services
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_existing_application_plans: '{{ threescale_cicd_tmpresponse.json|json_query(''plans[*].application_plan.system_name'') if threescale_cicd_api_system_name in threescale_cicd_existing_services else [] }}'
@@ -45,6 +47,7 @@
     url: "https://{{ inventory_hostname }}/admin/api/active_docs.json?access_token={{ threescale_cicd_access_token|urlencode }}"
     validate_certs: no
   register: threescale_cicd_tmp_allactivedocs
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - set_fact:
     threescale_cicd_existing_activedocs: '{{ threescale_cicd_tmp_allactivedocs.json|json_query(''api_docs[*].api_doc.system_name'') }}'
@@ -56,4 +59,35 @@
 
 - debug:
     var: threescale_cicd_existing_activedocs_details
+    verbosity: 1
+
+- name: Poke around for the APIcast Policies Registry API
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/policies.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+    status_code: 200,404
+  register: threescale_cicd_tmp_policy_response
+  changed_when: false
+  no_log: '{{ threescale_cicd_nolog }}'
+  when: threescale_cicd_capabilities is not defined
+
+- name: Poke around for the OIDC Configuration Show API
+  uri:
+    url: "https://{{ inventory_hostname }}/admin/api/services/0/proxy/oidc_configuration.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    validate_certs: no
+    status_code: 404
+  register: threescale_cicd_tmp_oidc_config_response
+  changed_when: false
+  no_log: '{{ threescale_cicd_nolog }}'
+  when: threescale_cicd_capabilities is not defined
+
+- set_fact:
+    threescale_cicd_capabilities:
+      policy_registry_api: '{{ threescale_cicd_tmp_policy_response.status == 200 }}'
+      oidc_configuration_api: '{{ threescale_cicd_tmp_oidc_config_response.content_type.startswith(''application/json'') }}'
+    cacheable: true
+  when: threescale_cicd_capabilities is not defined
+
+- debug:
+    var: threescale_cicd_capabilities
     verbosity: 1
