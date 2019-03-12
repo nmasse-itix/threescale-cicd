@@ -1,9 +1,12 @@
 ---
 
-- name: Verify that Ansible version is >= 2.4
+- name: Verify that Ansible version is >= 2.4.6
   assert:
-    that: "ansible_version.full is version_compare('2.4', '>=')"
-    msg: This module requires at least Ansible 2.4
+    that: "ansible_version.full is version_compare('2.4.6', '>=')"
+    msg: >
+      This module requires at least Ansible 2.4.6. The version that comes
+      with RHEL and CentOS by default (2.4.2) has a known bug that prevent
+      this role from running properly.
 
 - name: Check if jmespath is installed locally
   debug: msg={{dummy|json_query('@')}}
