@@ -53,4 +53,3 @@
     with_items: '{{ travis_jobs }}'
     vars:
       travis_jobs: '{{ get_build_response.json|json_query(''@.matrix[].id'') }}'
-

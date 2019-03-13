@@ -1,4 +1,3 @@
-
 - name: Install the pre-requisites
   hosts: localhost
   gather_facts: no

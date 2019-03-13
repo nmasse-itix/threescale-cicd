@@ -10,29 +10,37 @@
   assert:
     that:
     - 'threescale_cicd_api_security_requirements|length == 1'
-    msg: 'You have {{ threescale_cicd_api_security_requirements|length }} global security requirements. There must be one and only one security requirement.'
+    msg: >-
+      You have {{ threescale_cicd_api_security_requirements|length }} global security requirements.
+      There must be one and only one security requirement.
 
 - name: Make sure the security scheme is consistent with 3scale
   assert:
     that:
-    - '''type'' in threescale_cicd_api_security_scheme and threescale_cicd_api_security_scheme.type == ''apiKey'' or (threescale_cicd_api_security_scheme.type == ''oauth2'' and threescale_cicd_sso_issuer_endpoint is defined)'
-    msg: |-
+    - >-
+      'type' in threescale_cicd_api_security_scheme and threescale_cicd_api_security_scheme.type == 'apiKey'
+      or (threescale_cicd_api_security_scheme.type == 'oauth2' and threescale_cicd_sso_issuer_endpoint is defined)
+    msg: >-
       The embedded security definition {{ threescale_cicd_api_security_scheme_name }} is not compatible with 3scale.
       Please make sure you chose an "apiKey" or "oauth2" scheme.
       Also, if you chose "oauth2", you will need to pass the threescale_cicd_sso_issuer_endpoint extra variable.
       The security definition you chose: {{ threescale_cicd_api_security_scheme|to_nice_json }}
 
-- assert:
+- name: Make sure the Private Base URL is defined
+  assert:
     that:
     - 'threescale_cicd_private_base_url is defined'
-    msg: 'Either the private base url or the tuple backend hostname/scheme must be declared as extra variables (either threescale_cicd_private_base_url or threescale_cicd_api_backend_scheme / threescale_cicd_api_backend_hostname)'
+    msg: >-
+      Either the private base url or the tuple backend hostname/scheme must be declared as extra variables
+      (either threescale_cicd_private_base_url or threescale_cicd_api_backend_scheme / threescale_cicd_api_backend_hostname)
 
-- assert:
+- name: Smoketests consistency
+  assert:
     that:
     # Operation must exists
     - 'threescale_cicd_openapi_smoketest_operation in threescale_cicd_api_operations'
     # Must be a GET
-    - 'threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].verb == ''get'''
+    - "threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].verb == 'get'"
     # Must NOT have a placeholder in the path
     - 'threescale_cicd_api_operations[threescale_cicd_openapi_smoketest_operation].path.find("{") == -1'
     msg: "The smoketest operation {{ threescale_cicd_openapi_smoketest_operation }} must be a GET and cannot have a placeholder in its path."

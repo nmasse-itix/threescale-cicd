@@ -6,8 +6,10 @@
   changed_when: false
   ignore_errors: yes
 
-- set_fact:
+- name: Set the 'swagger' command path as fact
+  set_fact:
     threescale_cicd_goswagger_command: 'swagger'
+    cacheable: true
   when: check_global_goswagger_version is success
 
 - name: Check if go-swagger is installed locally
@@ -17,6 +19,8 @@
   ignore_errors: yes
   when: check_global_goswagger_version is failed
 
-- set_fact:
+- name: Set the 'swagger' command path as fact
+  set_fact:
     threescale_cicd_goswagger_command: '{{ threescale_cicd_local_bin_path }}/swagger'
+    cacheable: true
   when: check_local_goswagger_version is success and check_local_goswagger_version is not skipped

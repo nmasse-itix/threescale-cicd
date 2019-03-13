@@ -12,8 +12,9 @@
   retries: '{{ threescale_cicd_retries }}'
   delay: '{{ threescale_cicd_delay }}'
   until: 'threescale_cicd_tmpresponse is success and threescale_cicd_tmpresponse.json|length > 0'
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
 
-- set_fact:
+- name: Set the new client details and id as a fact
+  set_fact:
     threescale_cicd_default_application_sso_id: '{{ threescale_cicd_tmpresponse.json[0].id }}'
     threescale_cicd_default_application_sso_body: '{{ threescale_cicd_tmpresponse.json[0] }}'

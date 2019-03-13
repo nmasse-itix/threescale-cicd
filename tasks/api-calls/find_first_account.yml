@@ -5,7 +5,8 @@
     url: https://{{ inventory_hostname }}/admin/api/accounts.json?access_token={{ threescale_cicd_access_token|urlencode }}&state=approved&page=1&per_page=1
     validate_certs: no
   register: threescale_cicd_tmpresponse
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
 
-- set_fact:
+- name: Set the default first account id as a fact
+  set_fact:
     threescale_cicd_default_account_id: '{{ threescale_cicd_tmpresponse.json.accounts[0].account.id }}'

@@ -3,7 +3,7 @@
 - debug:
     var: threescale_cicd_create_application_payload
     verbosity: 1
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Create the application
   uri:
@@ -14,9 +14,10 @@
     status_code: 201
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 201'
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
 
-- set_fact:
+- name: Store the default application details as fact
+  set_fact:
     threescale_cicd_default_application_details: '{{ threescale_cicd_tmpresponse.json.application }}'
 
 - name: Wait for a couple seconds

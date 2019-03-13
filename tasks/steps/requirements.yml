@@ -7,8 +7,10 @@
     - "threescale_cicd_openapi_file is defined"
     msg: |-
       This module requires at least two variables:
-      - threescale_cicd_access_token that contains an Access Token with Read/Write privileges on the 3scale Account Management API. This variable is usually set in your inventory file.
-      - threescale_cicd_openapi_file that is the path to the OpenAPI file you want to deploy in 3scale. This variable is usually passed as an extra variable (-e threescale_cicd_openapi_file=...)
+      - threescale_cicd_access_token that contains an Access Token with Read/Write privileges on the 3scale Account Management API.
+        This variable is usually set in your inventory file.
+      - threescale_cicd_openapi_file that is the path to the OpenAPI file you want to deploy in 3scale.
+        This variable is usually passed as an extra variable (-e threescale_cicd_openapi_file=...)
 
 - name: Make sure the OpenAPI File Format is YAML or JSON
   assert:

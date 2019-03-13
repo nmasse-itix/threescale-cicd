@@ -1,7 +1,7 @@
 ---
 
 - debug:
-    msg: >
+    msg: >-
       Will use go-swagger at '{{ threescale_cicd_goswagger_command }}' as instructed.
       Auto-detection and download is DISABLED.
   when: threescale_cicd_goswagger_command is defined

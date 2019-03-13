@@ -29,7 +29,6 @@ objects:
     - name: latest
       annotations:
         role: jenkins-slave
-
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -44,7 +43,6 @@ objects:
         name: docker.io/openshift/jenkins-slave-base-centos7:${OPENSHIFT_VERSION}
       importPolicy:
         scheduled: true
-
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -89,4 +87,3 @@ objects:
     triggers:
     - type: ConfigChange
     - type: ImageChange
-

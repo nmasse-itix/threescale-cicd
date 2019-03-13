@@ -43,7 +43,7 @@
 - include_tasks: steps/smoke_test.yml
   vars:
     threescale_cicd_smoke_test_env: staging
-  when: >
+  when: >-
     threescale_cicd_openapi_smoketest_operation|length > 0 and threescale_cicd_application_plans is defined
     and threescale_cicd_apicast_sandbox_endpoint != threescale_cicd_apicast_production_endpoint
 

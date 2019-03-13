@@ -2,11 +2,15 @@
 
 - name: Retrieve existing policies from the 3scale Admin Portal
   uri:
-    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/policies.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    url: "{{ service_url }}/proxy/policies.json?access_token={{ threescale_cicd_access_token|urlencode }}"
     validate_certs: no
   register: threescale_cicd_tmpresponse
+  no_log: '{{ threescale_cicd_nolog }}'
+  vars:
+    service_url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}
 
-- set_fact:
+- name: Set the list of existing policies as a fact
+  set_fact:
     threescale_cicd_existing_policies_details: '{{ threescale_cicd_tmpresponse.json|json_query(''policies_config[]'') }}'
 
 - include_tasks: "api-calls/update_policies.yml"

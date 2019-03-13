@@ -1,6 +1,6 @@
 ---
 
-- debug: 
+- debug:
     var: threescale_cicd_smoke_test_headers
     verbosity: 1
 

@@ -2,21 +2,36 @@
 
 - name: Get the version of the staging proxy definition
   uri:
-    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_staging_environment_name }}/latest.json?access_token={{ threescale_cicd_access_token|urlencode }}'
+    url: '{{ service_url }}{{ proxy_path }}?access_token={{ threescale_cicd_access_token|urlencode }}'
     validate_certs: no
   register: threescale_cicd_tmpresponse
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
+  vars:
+    proxy_path: /proxy/configs/{{ threescale_cicd_staging_environment_name }}/latest.json
+    service_url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}
 
-- set_fact:
-    threescale_cicd_staging_proxy_version: '{{ threescale_cicd_tmpresponse.json.proxy_config.version }}'
+- name: Set the staging proxy version number as a fact
+  set_fact:
+    threescale_cicd_staging_proxy_version: >-
+      {{ threescale_cicd_tmpresponse.json.proxy_config.version }}
+
+- debug: # TODO
+    var: threescale_cicd_staging_proxy_version
 
 - name: Get the version of the production proxy definition
   uri:
-    url: 'https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/configs/{{ threescale_cicd_production_environment_name }}/latest.json?access_token={{ threescale_cicd_access_token|urlencode }}'
+    url: '{{ service_url }}{{ proxy_path }}?access_token={{ threescale_cicd_access_token|urlencode }}'
     validate_certs: no
     status_code: 200,404
   register: threescale_cicd_tmpresponse
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
+  vars:
+    proxy_path: /proxy/configs/{{ threescale_cicd_production_environment_name }}/latest.json
+    service_url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}
 
-- set_fact:
-    threescale_cicd_production_proxy_version: '{{ threescale_cicd_tmpresponse.json.proxy_config.version if threescale_cicd_tmpresponse.status == 200 else ''NONE'' }}'
+- name: Set the production proxy version number as a fact
+  set_fact:
+    threescale_cicd_production_proxy_version: >-
+      {{ threescale_cicd_tmpresponse.json.proxy_config.version
+         if threescale_cicd_tmpresponse.status == 200
+         else 'NONE' }}

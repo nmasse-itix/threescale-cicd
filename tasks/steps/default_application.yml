@@ -17,7 +17,7 @@
 ##
 
 - include_tasks: api-calls/keycloak/authenticate.yml
-  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+  when: "threescale_cicd_api_security_scheme.type == 'oauth2'"
   vars:
     oauth_payload:
       client_id: '{{ threescale_cicd_sso_issuer_endpoint|urlsplit(''username'') }}'
@@ -26,7 +26,7 @@
       grant_type: 'client_credentials'
 
 - include_tasks: api-calls/keycloak/wait_for_client.yml
-  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+  when: "threescale_cicd_api_security_scheme.type == 'oauth2'"
 
 - include_tasks: api-calls/keycloak/patch_client.yml
-  when: 'threescale_cicd_api_security_scheme.type == ''oauth2'''
+  when: "threescale_cicd_api_security_scheme.type == 'oauth2'"

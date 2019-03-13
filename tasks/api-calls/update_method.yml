@@ -3,17 +3,20 @@
 - debug:
     var: threescale_cicd_update_method_payload
     verbosity: 1
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
 
 - name: Update the method
   uri:
-    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/metrics/{{ threescale_cicd_metric_id }}/methods/{{ (threescale_cicd_existing_metrics_details|selectattr('system_name', 'equalto', threescale_cicd_api_operation.key)|first).id }}.json
+    url: '{{ service_url }}/metrics/{{ threescale_cicd_metric_id }}/methods/{{ method_id }}.json'
     validate_certs: no
     method: PATCH
     body: '{{ threescale_cicd_update_method_payload }}'
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
+  vars:
+    service_url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}
+    method_id: "{{ (threescale_cicd_existing_metrics_details|selectattr('system_name', 'equalto', threescale_cicd_api_operation.key)|first).id }}"
 
 - name: Wait for a couple seconds
   pause:

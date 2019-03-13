@@ -14,7 +14,7 @@
 
 - name: Create the folder to download go-swagger
   file:
-    path: '{{ threescale_cicd_local_bin_path }}'
+    path: '{{ threescale_cicd_local_bin_path }}'
     state: directory
 
 - name: Download go-swagger
@@ -23,14 +23,16 @@
     dest: '{{ threescale_cicd_local_bin_path }}/swagger'
     mode: 0755
   vars:
-    goswagger_download_url: '{{ goswagger_asset.browser_download_url }}'
+    goswagger_download_url: '{{ goswagger_asset.browser_download_url }}'
     goswagger_asset: '{{ goswagger_assets|selectattr(''name'', ''equalto'', artifact_name)|first }}'
     goswagger_assets: '{{ latest_goswagger_version.json.assets }}'
     artifact_name: 'swagger_{{ ansible_system|lower }}_{{ swagger_architecture }}'
     swagger_architecture: '{{ swagger_architecture_mapping[ansible_architecture] }}'
-    swagger_architecture_mapping: 
+    swagger_architecture_mapping:
       x86_64: amd64
       armv7l: arm
 
-- set_fact:
+- name: Set the 'swagger' command path as fact
+  set_fact:
     threescale_cicd_goswagger_command: '{{ threescale_cicd_local_bin_path }}/swagger'
+    cacheable: true

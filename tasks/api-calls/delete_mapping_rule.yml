@@ -1,14 +1,21 @@
 ---
 
+- debug:
+    msg: "Deleting unused mapping rule {{ threescale_cicd_mapping_rule }}..."
+    verbosity: 1
+
 - name: Delete the unused mapping rules
   uri:
-    url: "https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/mapping_rules/{{ threescale_cicd_existing_mapping_rules[threescale_cicd_mapping_rule] }}.json?access_token={{ threescale_cicd_access_token|urlencode }}"
+    url: "{{ service_url }}/proxy/mapping_rules/{{ rule_id }}.json?access_token={{ threescale_cicd_access_token|urlencode }}"
     validate_certs: no
     method: DELETE
     status_code: 200,404
   register: threescale_cicd_tmpresponse
   changed_when: 'threescale_cicd_tmpresponse.status == 200'
-  no_log: '{{ threescale_cicd_nolog }}'
+  no_log: '{{ threescale_cicd_nolog }}'
+  vars:
+    rule_id: '{{ threescale_cicd_existing_mapping_rules[threescale_cicd_mapping_rule] }}'
+    service_url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}
 
 - name: Wait for a couple seconds
   pause:

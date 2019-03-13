@@ -5,4 +5,3 @@
 
 - include_tasks: api-calls/create_application_plan.yml
   when: 'threescale_cicd_application_plan.system_name not in threescale_cicd_existing_application_plans'
-
