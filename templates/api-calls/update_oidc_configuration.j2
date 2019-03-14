@@ -1,0 +1,11 @@
+{% set flows = threescale_cicd_oicd_flows|default([ threescale_cicd_api_security_scheme.flow ]) %}
+{% 
+  set payload = [ 
+    'access_token=' ~ threescale_cicd_access_token|urlencode,
+    'implicit_flow_enabled=' ~ ('true' if 'implicit' in flows else 'false'),
+    'direct_access_grants_enabled=' ~ ('true' if 'password' in flows else 'false'),
+    'service_accounts_enabled=' ~ ('true' if 'application' in flows else 'false'),
+    'standard_flow_enabled=' ~ ('true' if 'accessCode' in flows else 'false'),
+  ]
+%}
+{{ payload|join("&") }}

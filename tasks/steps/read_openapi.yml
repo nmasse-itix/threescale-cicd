@@ -46,5 +46,19 @@
     msg: "The smoketest operation {{ threescale_cicd_openapi_smoketest_operation }} must be a GET and cannot have a placeholder in its path."
   when: 'threescale_cicd_openapi_smoketest_operation|length > 0'
 
+- name: Make sure the 'application' OAuth flow is enabled if smoke tests are required
+  assert:
+    that:
+    - "'application' in threescale_cicd_oicd_flows|default([ threescale_cicd_api_security_scheme.flow ])"
+    msg: >-
+      Since 3scale AMP 2.5, you need to explicitely add the "application" flow to the supported
+      OAuth flows if you want to run smoke tests. You can either disable smoke tests
+      (-e threescale_cicd_openapi_smoketest_operation="") or enable the application flow
+      (-e threescale_cicd_oicd_flows="{{ [ 'application', threescale_cicd_api_security_scheme.flow ] }}").
+  when: >-
+    threescale_cicd_api_security_scheme.type == 'oauth2'
+    and threescale_cicd_openapi_smoketest_operation|length > 0
+    and threescale_cicd_capabilities.oidc_configuration_api|bool
+
 - debug:
     msg: "Will work on service with system_name = {{ threescale_cicd_api_system_name }}"

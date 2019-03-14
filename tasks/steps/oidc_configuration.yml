@@ -1,0 +1,6 @@
+---
+
+- include_tasks: api-calls/update_oidc_configuration.yml
+  when: >-
+    threescale_cicd_api_security_scheme.type == 'oauth2'
+    and threescale_cicd_capabilities.oidc_configuration_api|bool

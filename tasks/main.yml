@@ -11,11 +11,14 @@
 # Warn the user about those deprecated features
 - import_tasks: steps/variables_from_inventory.yml
 
+# Discover the current state of the platform
+- import_tasks: steps/discover_platform.yml
+
 # Load the API definition from the provided OpenAPI file
 - import_tasks: steps/read_openapi.yml
 
-# Discover the current state of the platform
-- import_tasks: steps/discover.yml
+# Discover the current state of the service
+- import_tasks: steps/discover_service.yml
 
 # Create or update the service definition
 - import_tasks: steps/service.yml
@@ -28,6 +31,9 @@
 
 # Update the proxy
 - import_tasks: steps/proxy.yml
+
+# Update the OIDC configuration
+- import_tasks: steps/oidc_configuration.yml
 
 # Create or update policies
 - import_tasks: steps/policies.yml
@@ -45,7 +51,7 @@
     threescale_cicd_smoke_test_env: staging
   when: >-
     threescale_cicd_openapi_smoketest_operation|length > 0 and threescale_cicd_application_plans is defined
-    and threescale_cicd_apicast_sandbox_endpoint != threescale_cicd_apicast_production_endpoint
+    and threescale_cicd_apicast_discovered_sandbox_endpoint != threescale_cicd_apicast_discovered_production_endpoint
 
 # Promote to production
 - import_tasks: steps/promote.yml

@@ -501,6 +501,18 @@ installed in `{{ threescale_cicd_local_bin_path }}`.
   - `threescale_cicd_goswagger_command=/usr/local/bin/swagger`
   - `threescale_cicd_local_bin_path=/tmp`
 
+### `threescale_cicd_oicd_flows`
+
+Override or update the list of supported OAuth flows for this API.
+
+- **Syntax:** array of strings (`[ 'application', 'accessCode' ]`)
+- **Required:** no
+- **Default value:** the `flow` field of the `securityScheme` object in your
+  OpenAPI Specification file.
+- **Examples:**
+  - `threescale_cicd_oicd_flows="{{ [ 'application', 'accessCode' ] }}"` (override the flow list)
+  - `threescale_cicd_oicd_flows="{{ [ 'application', threescale_cicd_api_security_scheme.flow ] }}"` (add a flow)
+
 ### Miscellaneous variables
 
 Miscellaneous variables defined in [defaults/main.yml](defaults/main.yml)

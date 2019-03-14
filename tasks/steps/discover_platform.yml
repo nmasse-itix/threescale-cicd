@@ -25,35 +25,6 @@
     var: threescale_cicd_existing_services_details
     verbosity: 1
 
-- name: Get the list of existing application plans
-  uri:
-    url: '{{ service_url }}/application_plans.json?access_token={{ threescale_cicd_access_token|urlencode }}'
-    validate_certs: no
-  register: threescale_cicd_tmpresponse
-  when: threescale_cicd_api_system_name in threescale_cicd_existing_services
-  no_log: '{{ threescale_cicd_nolog }}'
-  vars:
-    service_url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}
-
-- name: Set the list of existing application plans as a fact
-  set_fact:
-    threescale_cicd_existing_application_plans: >-
-      {{ threescale_cicd_tmpresponse.json|json_query('plans[*].application_plan.system_name')
-         if threescale_cicd_api_system_name in threescale_cicd_existing_services
-         else [] }}
-    threescale_cicd_existing_application_plans_details: >-
-      {{ threescale_cicd_tmpresponse.json|json_query('plans[].{"system_name": application_plan.system_name, "id": application_plan.id}')
-         if threescale_cicd_api_system_name in threescale_cicd_existing_services
-         else [] }}
-
-- debug:
-    msg: "Found {{ threescale_cicd_existing_application_plans|length }} application plans"
-    verbosity: 1
-
-- debug:
-    var: threescale_cicd_existing_application_plans_details
-    verbosity: 1
-
 - name: Retrieve existing ActiveDocs from the 3scale Admin Portal
   uri:
     url: "https://{{ inventory_hostname }}/admin/api/active_docs.json?access_token={{ threescale_cicd_access_token|urlencode }}"

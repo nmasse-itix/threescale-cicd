@@ -5,27 +5,17 @@
   gather_facts: no
   vars:
     threescale_cicd_openapi_file: '{{ playbook_dir }}/api-contracts/echo-api-oidc.yaml'
+    threescale_cicd_oicd_flows: "{{ [ 'application', threescale_cicd_api_security_scheme.flow ] }}"
   tasks:
-  # With 3scale SaaS, there is a race condition where Zync would update the SSO client
-  # after we patched it and thus reverts our changes.
-  #
-  # As a temporary fix the smoke tests are disabled with OIDC in the SaaS environment
-
   - name: Generate a random system_name for this test run
     import_tasks: "common/random-system-name.yml"
-    
+
   # Test a first deployment
   - import_role:
       name: 'nmasse-itix.threescale-cicd'
-    vars:
-      # TODO: remove me as soon as proper OIDC support is implemented for SaaS
-      threescale_cicd_openapi_smoketest_operation: '{{ '''' if inventory_hostname is match(".*[.]3scale[.]net") else ''Echo'' }}'
   # Verify idempotence
   - import_role:
       name: 'nmasse-itix.threescale-cicd'
-    vars:
-      # TODO: remove me as soon as proper OIDC support is implemented for SaaS
-      threescale_cicd_openapi_smoketest_operation: '{{ '''' if inventory_hostname is match(".*[.]3scale[.]net") else ''Echo'' }}'
   # Delete the service
   - import_role:
       name: 'nmasse-itix.threescale-cicd'

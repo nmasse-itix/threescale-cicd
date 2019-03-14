@@ -162,3 +162,4 @@ threescale_cicd_smoke_test_url: '{{ lookup(''template'', ''api-calls/smoke-test/
 threescale_cicd_promote_proxy_payload: '{{ lookup(''template'', ''api-calls/promote_proxy.j2'') }}'
 threescale_cicd_update_activedoc_payload: '{{ lookup(''template'', ''api-calls/update_activedoc.j2'') }}'
 threescale_cicd_create_activedoc_payload: '{{ lookup(''template'', ''api-calls/create_activedoc.j2'') }}'
+threescale_cicd_update_oidc_configuration_payload: '{{ lookup(''template'', ''api-calls/update_oidc_configuration.j2'') }}'

@@ -1,0 +1,20 @@
+---
+
+- debug:
+    var: threescale_cicd_update_oidc_configuration_payload
+    verbosity: 1
+  no_log: '{{ threescale_cicd_nolog }}'
+
+- name: Update the proxy definition
+  uri:
+    url: https://{{ inventory_hostname }}/admin/api/services/{{ threescale_cicd_api_service_id }}/proxy/oidc_configuration.json
+    validate_certs: no
+    method: PATCH
+    body: '{{ threescale_cicd_update_oidc_configuration_payload }}'
+  register: threescale_cicd_tmpresponse
+  changed_when: 'threescale_cicd_tmpresponse.status == 200'
+  no_log: '{{ threescale_cicd_nolog }}'
+
+- name: Wait for a couple seconds
+  pause:
+    seconds: '{{ threescale_cicd_throttling }}'

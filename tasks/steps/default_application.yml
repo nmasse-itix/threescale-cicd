@@ -15,9 +15,13 @@
 ## When using OAuth / OIDC authentication, we need to patch the Keycloak client
 ## to support the client_credentials grant.
 ##
+## Note: only happens on 3scale AMP < 2.5. Later versions do not need this.
+##
 
 - include_tasks: api-calls/keycloak/authenticate.yml
-  when: "threescale_cicd_api_security_scheme.type == 'oauth2'"
+  when: >-
+    threescale_cicd_api_security_scheme.type == 'oauth2'
+    and not threescale_cicd_capabilities.oidc_configuration_api|bool
   vars:
     oauth_payload:
       client_id: '{{ threescale_cicd_sso_issuer_endpoint|urlsplit(''username'') }}'
@@ -26,7 +30,11 @@
       grant_type: 'client_credentials'
 
 - include_tasks: api-calls/keycloak/wait_for_client.yml
-  when: "threescale_cicd_api_security_scheme.type == 'oauth2'"
+  when: >-
+    threescale_cicd_api_security_scheme.type == 'oauth2'
+    and not threescale_cicd_capabilities.oidc_configuration_api|bool
 
 - include_tasks: api-calls/keycloak/patch_client.yml
-  when: "threescale_cicd_api_security_scheme.type == 'oauth2'"
+  when: >-
+    threescale_cicd_api_security_scheme.type == 'oauth2'
+    and not threescale_cicd_capabilities.oidc_configuration_api|bool
