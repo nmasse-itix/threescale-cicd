@@ -28,8 +28,8 @@ script:
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
 branches:
-  except:
-  - /^dev.*/
+  only:
+  - master
 before_install:
 # travis encrypt-file tests/3scale-inventory.yaml tests/3scale-inventory.yaml.enc
 - openssl aes-256-cbc -K $encrypted_5ba3c614c7e1_key -iv $encrypted_5ba3c614c7e1_iv -in tests/3scale-inventory.yaml.enc -out tests/3scale-inventory.yaml -d
