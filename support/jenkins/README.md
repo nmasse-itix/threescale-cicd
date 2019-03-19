@@ -17,14 +17,14 @@ You can create the Jenkins Slave image for Ansible by executing the following co
 
 ```sh
 oc create -f https://raw.githubusercontent.com/nmasse-itix/threescale-cicd/master/support/jenkins/jenkins-slave-template-centos.yaml
-oc new-app --template=jenkins-slave-template
+oc new-app --template=jenkins-ansible-slave
 ```
 
 Alternatively, if you are a Red Hat customer, you can build your images based on RHEL with the following commands:
 
 ```sh
 oc create -f https://raw.githubusercontent.com/nmasse-itix/threescale-cicd/master/support/jenkins/jenkins-slave-template-rhel.yaml
-oc new-app --template=jenkins-slave-template
+oc new-app --template=jenkins-ansible-slave
 ```
 
 Wait for the build to finish:
