@@ -90,6 +90,11 @@ threescale_cicd_default_application_plan: '{{ (threescale_cicd_application_plans
 threescale_cicd_default_application_appid: '{{ (threescale_cicd_default_application_name ~ threescale_cicd_api_system_name ~ threescale_cicd_access_token)|hash(''sha1'') }}'
 threescale_cicd_default_application_appsecret: '{{ (''secret'' ~ threescale_cicd_default_application_name ~ threescale_cicd_api_system_name ~ threescale_cicd_access_token)|hash(''sha1'') }}'
 
+##
+## Create test application whether or not smoke tests are enabled
+##
+threescale_cicd_create_default_application: no
+
 # The OpenAPI Operation to use for the smoketest
 threescale_cicd_openapi_smoketest_operation: '{{ threescale_cicd_openapi_file_content|json_query(''paths.*.get[? "x-threescale-smoketests-operation" ].operationId'')|first|default("")|regex_replace(''[^0-9a-zA-Z_]+'', ''_'') }}'
 

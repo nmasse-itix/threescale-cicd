@@ -43,7 +43,7 @@
 
 # Create or update the default application if smoke tests are needed
 - include_tasks: steps/default_application.yml
-  when: 'threescale_cicd_openapi_smoketest_operation|length > 0 and threescale_cicd_application_plans is defined'
+  when: (threescale_cicd_openapi_smoketest_operation|length > 0 or threescale_cicd_create_default_application|bool) and threescale_cicd_application_plans is defined
 
 # Run smoke tests on the staging gateway
 - include_tasks: steps/smoke_test.yml

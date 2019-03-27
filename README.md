@@ -513,6 +513,15 @@ Override or update the list of supported OAuth flows for this API.
   - `threescale_cicd_oicd_flows="{{ [ 'application', 'accessCode' ] }}"` (override the flow list)
   - `threescale_cicd_oicd_flows="{{ [ 'application', threescale_cicd_api_security_scheme.flow ] }}"` (add a flow)
 
+### `threescale_cicd_create_default_application`
+
+Allows to create a test application with the default application plan, whether smoke tests are enabled or not.
+
+- **Syntax:** boolean (`yes`, `no`, `true`, `false`)
+- **Required:** no
+- **Default value:** `no`
+- **Example:** `yes` if you want a default application to be created
+
 ### Miscellaneous variables
 
 Miscellaneous variables defined in [defaults/main.yml](defaults/main.yml)
