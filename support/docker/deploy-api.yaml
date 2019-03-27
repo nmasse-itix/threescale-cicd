@@ -64,7 +64,7 @@
     # GIT_CONTEXT_DIR=...)
     build: '{{ lookup(''env'', ''BUILD'')|from_json if lookup(''env'', ''BUILD'')|length > 0 else {} }}'
     git_repository: '{{ build.spec.source.git.uri if ''spec'' in build and ''uri'' in build.spec.source.git else '''' }}'
-    git_context_dir: '{{ build.spec.source.git.contextDir if ''spec'' in build and ''contextDir'' in build.spec.source.git else '''' }}'
+    git_context_dir: '{{ build.spec.source.contextDir if ''spec'' in build and ''contextDir'' in build.spec.source else '''' }}'
     git_ref: '{{ build.spec.source.git.ref if ''spec'' in build and ''ref'' in build.spec.source.git else ''master'' }}'
     openapi_file: openapi-spec.yaml
 
