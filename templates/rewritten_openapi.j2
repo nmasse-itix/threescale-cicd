@@ -24,4 +24,6 @@
 }) %}
 {# Make sure the swagger version is a string and not a number #}
 {% do new_openapi.update({ "swagger": new_openapi.swagger ~ "" }) %}
+{# Patch the basePath in case it has been overwritten #}
+{% do new_openapi.update({ "basePath": (threescale_cicd_api_basepath if threescale_cicd_api_basepath|length > 0 else "/") }) %}
 {{ new_openapi }}
