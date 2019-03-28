@@ -16,7 +16,7 @@ To use this role from Jenkins, you will need to:
 You can create the Jenkins Slave image for Ansible by executing the following command **in the same project as your Jenkins master**:
 
 ```sh
-oc import-image jenkins-ansible-slave:master --from=docker.io/nmasse-itix/threescale-cicd:master --confirm
+oc import-image jenkins-ansible-slave:master --from=docker.io/nmasse/threescale-cicd:master --confirm
 oc annotate is jenkins-ansible-slave role=jenkins-slave --overwrite
 ```
 
