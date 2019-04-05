@@ -43,6 +43,8 @@ items:
             value: ""
           - name: THREESCALE_CICD_APICAST_PRODUCTION_ENDPOINT
             value: ""
+          - name: THREESCALE_CICD_CREATE_DEFAULT_APPLICATION
+            value: "true"
           volumeMounts:
           - name: 3scale-secrets
             mountPath: /tmp/secrets

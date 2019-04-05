@@ -34,6 +34,7 @@ pipeline {
         // Misc. params
         booleanParam(name: 'THREESCALE_CICD_VALIDATE_OPENAPI', description: 'Validates the OpenAPI Specification file against the official schema', defaultValue: true)
         booleanParam(name: 'ANSIBLE_VERBOSE', description: 'Run Ansible in verbose mode (-v)', defaultValue: false)
+        booleanParam(name: 'THREESCALE_CICD_CREATE_DEFAULT_APPLICATION', description: 'Create a test application with the default application plan, whether smoke tests are enabled or not', defaultValue: true)
     }
 
     stages {

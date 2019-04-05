@@ -91,6 +91,7 @@
     - threescale_cicd_apicast_sandbox_endpoint
     - threescale_cicd_apicast_production_endpoint
     - threescale_cicd_sso_issuer_endpoint
+    - threescale_cicd_create_default_application
   pre_tasks:
   - name: Accept threescale_cicd_* variables from environment variables (lowercase)
     set_fact:

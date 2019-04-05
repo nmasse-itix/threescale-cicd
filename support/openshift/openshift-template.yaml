@@ -55,6 +55,7 @@ parameters:
 - name: THREESCALE_CICD_API_BASE_SYSTEM_NAME
   description: Define the base name to compute the final system_name
   required: false
+  value: api
 - name: THREESCALE_CICD_WILDCARD_DOMAIN
   description: Automatically defines the APIcast public URLs based on a scheme
   required: false
@@ -82,6 +83,10 @@ parameters:
 - name: THREESCALE_CICD_APICAST_PRODUCTION_ENDPOINT
   description: Defines the Public Production Base URL
   required: false
+- name: THREESCALE_CICD_CREATE_DEFAULT_APPLICATION
+  description: Create a test application with the default application plan, whether smoke tests are enabled or not
+  required: false
+  value: "true"
 
 objects:
 - apiVersion: v1
@@ -129,7 +134,7 @@ objects:
         - name: OPENAPI_FILE
           value: ${API_OPENAPI_FILE}
         - name: THREESCALE_CICD_API_BASE_SYSTEM_NAME
-          value: ${API_NAME}
+          value: ${THREESCALE_CICD_API_BASE_SYSTEM_NAME}
         - name: THREESCALE_CICD_API_SYSTEM_NAME
           value: ${THREESCALE_CICD_API_SYSTEM_NAME}
         - name: THREESCALE_CICD_WILDCARD_DOMAIN
@@ -150,6 +155,8 @@ objects:
           value: ${THREESCALE_CICD_APICAST_SANDBOX_ENDPOINT}
         - name: THREESCALE_CICD_APICAST_PRODUCTION_ENDPOINT
           value: ${THREESCALE_CICD_APICAST_PRODUCTION_ENDPOINT}
+        - name: THREESCALE_CICD_CREATE_DEFAULT_APPLICATION
+          value: ${THREESCALE_CICD_CREATE_DEFAULT_APPLICATION}
         secrets:
           - secretSource: 
               name: "3scale-admin-portal-${API_NAME}"

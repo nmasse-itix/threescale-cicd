@@ -27,18 +27,3 @@ objects:
       type: "JenkinsPipeline"
       jenkinsPipelineStrategy:
         jenkinsfilePath: support/jenkins/Jenkinsfile
-        env:
-          - name: THREESCALE_CICD_ACCESS_TOKEN
-            value: 
-          - name: THREESCALE_CICD_SSO_ISSUER_ENDPOINT
-            value: 
-          - name: THREESCALE_PORTAL_HOSTNAME
-            value: 
-          - name: GIT_REPOSITORY
-            value: 
-          - name: GIT_BRANCH
-            value: 
-          - name: OPENAPI_FILE
-            value: 
-          - name: THREESCALE_CICD_PRIVATE_BASE_URL
-            value: 
