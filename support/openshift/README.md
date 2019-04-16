@@ -1,4 +1,4 @@
-# Using this Ansible role from Kubernetes
+# Using this Ansible role on OpenShift
 
 You can use the provided OpenShift template to create all the mandatory objects:
 
@@ -36,13 +36,13 @@ Wait for the build to complete:
 oc logs -f bc/deploy-3scale-api-echo-api
 ```
 
-To start this build from a Jenkins pipeline, you will need first to give the `system:build-strategy-custom` role to the `jenkins` Service Account:
+To start this build from a Jenkins pipeline, you will need to give the `system:build-strategy-custom` role to the `jenkins` Service Account:
 
 ```sh
 oc adm policy add-role-to-user system:build-strategy-custom -z jenkins
 ```
 
-Then, from your Jenkins pipeline, you can use:
+Then, from your Jenkins pipeline you can use:
 
 ```sh
 openshift.withCluster() {
