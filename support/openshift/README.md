@@ -35,3 +35,20 @@ Wait for the build to complete:
 ```sh
 oc logs -f bc/deploy-3scale-api-echo-api
 ```
+
+To start this build from a Jenkins pipeline, you will need first to give the `system:build-strategy-custom` role to the `jenkins` Service Account:
+
+```sh
+oc adm policy add-role-to-user system:build-strategy-custom -z jenkins
+```
+
+Then, from your Jenkins pipeline, you can use:
+
+```sh
+openshift.withCluster() {
+    openshift.withProject() {
+        def bc = openshift.selector('bc', "deploy-3scale-api-echo-api");
+        bc.startBuild("--wait=true");
+    }
+}
+```
