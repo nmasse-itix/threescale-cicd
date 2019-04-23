@@ -106,3 +106,32 @@ variable.
 You can find the Account id by navigating to **Audience** > **Accounts** >
 **Listing** and clicking on the Account of your choice. The ID is the
 last part of the URL (`/buyers/accounts/{id}`).
+
+## Override the default versioning scheme
+
+By default, the playbook will version your APIs based on the
+[Semantic Versioning](https://semver.org/) scheme. This means minor versions
+(1.0, 1.1, 1.2, etc) will be deployed continously to the same 3scale service.
+Major versions are deployed side-by-side (one service for each major version).
+
+If you want to deploy all versions to the same service, no matter what:
+
+```yaml
+- hosts: threescale
+  gather_facts: no
+  vars:
+    threescale_cicd_api_version_major: '0' # or whatever you want as long as it remains static
+  roles:
+  - nmasse-itix.threescale-cicd
+```
+
+If you want to release minor versions as major versions:
+
+```yaml
+- hosts: threescale
+  gather_facts: no
+  vars:
+    threescale_cicd_api_version_major: '{{ threescale_cicd_api_version_components|first }}-{{ threescale_cicd_api_version_components[1] if threescale_cicd_api_version_components|length > 1 else 0 }}'
+  roles:
+  - nmasse-itix.threescale-cicd
+```
