@@ -6,17 +6,17 @@ matrix:
   - python: '2.7'
     env: ANSIBLE_VERSION=2.4.6 THREESCALE_ENV=saas-apicast-selfmanaged
   - python: '2.7'
-    env: ANSIBLE_VERSION=2.4.6 THREESCALE_ENV=onpremise-2.3
-  - python: '2.7'
     env: ANSIBLE_VERSION=2.4.6 THREESCALE_ENV=onpremise-2.4
+  - python: '2.7'
+    env: ANSIBLE_VERSION=2.4.6 THREESCALE_ENV=onpremise-2.5
   - python: '3.6'
     env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=saas
   - python: '3.6'
     env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=saas-apicast-selfmanaged
   - python: '3.6'
-    env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=onpremise-2.3
-  - python: '3.6'
     env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=onpremise-2.4
+  - python: '3.6'
+    env: ANSIBLE_VERSION=2.7.5 THREESCALE_ENV=onpremise-2.5
 install:
 - pip install ansible==$ANSIBLE_VERSION
 - pip install jmespath
