@@ -11,6 +11,11 @@ LABEL name="openshift3/jenkins-agent-ansible-26-centos7" \
         io.openshift.tags="openshift,jenkins,agent,ansible"
 
 USER root
+
+# Set a safe value for the temporary directory. Otherwise the ansible-playbook command fails when run from a jenkins slave:
+# AnsibleError: Unable to create local directories(/home/jenkins/.ansible/tmp): [Errno 13] Permission denied: '/home/jenkins/.ansible/tmp'
+ENV DEFAULT_LOCAL_TMP=/tmp
+
 RUN yum install -y epel-release && \
     yum install -y 'ansible >= 2.6' && \
     yum install -y python27-python-pip && \
