@@ -16,8 +16,10 @@ To use this role from Jenkins, you will need to:
 You can create the Jenkins Slave image for Ansible by executing the following command **in the same project as your Jenkins master**:
 
 ```sh
-oc import-image jenkins-ansible-slave:master --from=docker.io/nmasse/threescale-cicd:master --confirm
+oc import-image jenkins-ansible-slave:master --from=docker.io/nmasse/jenkins-ansible-slave:master --confirm
 oc annotate is jenkins-ansible-slave role=jenkins-slave --overwrite
+oc tag jenkins-ansible-slave:master jenkins-ansible-slave:latest
+oc patch is/jenkins-ansible-slave -p '{"spec":{"tags":[{"name":"latest","annotations":{"role": "jenkins-slave"}}]}}'
 ```
 
 Alternatively, if you are a Red Hat customer, you can build your images based on RHEL with the following commands:
@@ -95,4 +97,43 @@ build(job: '<namespace>-deploy-3scale-api',
                     string(name: 'GIT_BRANCH', value: 'master'),
                     string(name: 'OPENAPI_FILE', value: 'openapi-spec.yaml'),
                     string(name: 'THREESCALE_CICD_PRIVATE_BASE_URL', value: 'https://echo-api.3scale.net') ])
+```
+
+## How to troubleshoot issues when running ansible playbooks from Jenkins
+
+Run a container using the `jenkins-ansible-slave` docker image and override the default entrypoint:
+
+```sh
+docker run -it --rm nmasse/jenkins-ansible-slave:master /bin/bash
+```
+
+Clone this repository in the current directory (usually `/var/lib/origin`):
+
+```sh
+git clone https://github.com/nmasse-itix/threescale-cicd.git .
+```
+
+Clone the target API repository:
+
+```sh
+export API_BRANCH=master
+export API_REPOSITORY=https://github.com/nmasse-itix/rhte-api.git
+export OPENAPI_FILE=openapi-spec.yaml
+git clone -b "$API_BRANCH" -- "$API_REPOSITORY" support/jenkins/api
+```
+
+Set the Jenkins job parameters as environment variables:
+
+```sh
+export THREESCALE_CICD_ACCESS_TOKEN=1234...5678
+export THREESCALE_CICD_SSO_ISSUER_ENDPOINT=http://client_id:client_secret@sso.hostname/auth/realms/realm # only for OIDC
+export THREESCALE_PORTAL_HOSTNAME=<tenant>-admin.3scale.net
+export THREESCALE_CICD_API_BASE_SYSTEM_NAME=my_test_123
+export THREESCALE_CICD_PRIVATE_BASE_URL=http://echo-api.3scale.net
+```
+
+Run the playbook:
+
+```sh
+ansible-playbook support/jenkins/deploy-api.yaml -e "openapi_file=$OPENAPI_FILE" -v
 ```
