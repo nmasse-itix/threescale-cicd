@@ -15,6 +15,9 @@ ARG SOURCE_BRANCH=master
 RUN yum --enablerepo=extras install -y epel-release centos-release-scl && \
     yum-config-manager --enable rhel-server-rhscl-7-rpms && \
     yum install -y ansible git python27-python-pip && \
+    # Remove the existing jinja2 library and its dependencies before re-installing it
+    # This is mandatory to prevent any leftover from a previous install
+    rm -rf /usr/lib/python2.7/site-packages/markupsafe /usr/lib/python2.7/site-packages/jinja2 && \
     scl enable python27 "pip install --install-option='--install-purelib=/usr/lib/python2.7/site-packages/' jinja2" && \
     yum clean all && \
     rm -rf /var/cache/yum && \
