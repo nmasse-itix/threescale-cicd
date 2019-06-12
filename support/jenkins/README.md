@@ -18,7 +18,7 @@ You can create the Jenkins Slave image for Ansible by executing the following co
 ```sh
 oc import-image jenkins-ansible-slave:master --from=docker.io/nmasse/jenkins-ansible-slave:master --confirm
 oc annotate is jenkins-ansible-slave role=jenkins-slave --overwrite
-oc tag jenkins-ansible-slave:master jenkins-ansible-slave:latest
+oc tag jenkins-ansible-slave:master jenkins-ansible-slave:latest --alias
 oc patch is/jenkins-ansible-slave -p '{"spec":{"tags":[{"name":"latest","annotations":{"role": "jenkins-slave"}}]}}'
 ```
 
