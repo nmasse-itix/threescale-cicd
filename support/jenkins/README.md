@@ -137,3 +137,53 @@ Run the playbook:
 ```sh
 ansible-playbook support/jenkins/deploy-api.yaml -e "openapi_file=$OPENAPI_FILE" -v
 ```
+
+## How to customize the Jenkins pipeline
+
+- Connect to your Jenkins master
+- Click **New Item**
+- Fill out the item name
+- Click on **Pipeline**
+- Click on **OK**
+- Check **This project is parameterized**
+- Copy/paste the pipeline definition from [this file](Jenkinsfile)
+- Comment the line:
+
+```raw
+                checkout scm
+```
+
+- Uncomment the line:
+
+```raw
+                //git url: 'https://github.com/nmasse-itix/threescale-cicd.git'
+```
+
+- It should look like this:
+
+```raw
+        stage("GIT Checkout") {
+            steps {
+                // Checkout the GIT repository containing the Ansible Playbook
+                //checkout scm
+                git url: 'https://github.com/nmasse-itix/threescale-cicd.git'
+```
+
+- Edit the `parameters` section of the pipeline to add comfortable default values so that you can run the pipeline with just a few clicks. Set default values for:
+
+```groovy
+    parameters {
+        credentials(name: 'THREESCALE_CICD_ACCESS_TOKEN', description: 'The 3scale Access Token', credentialType: "Secret text", required: true, defaultValue: "<namespace>-3scale-access-token")
+        string(name: 'THREESCALE_PORTAL_HOSTNAME', description: 'The 3scale Admin Portal hostname', defaultValue: "<tenant>-admin.3scale.net")
+        string(name: 'THREESCALE_CICD_API_BASE_SYSTEM_NAME', description: 'Define the base name to compute the final system_name', defaultValue: "my_test_123")
+        string(name: 'API_REPOSITORY', description: 'The GIT repository to checkout, containing the OpenAPI Specifications', defaultValue: "https://github.com/nmasse-itix/rhte-api.git")
+        string(name: 'OPENAPI_FILE', description: 'The path to the OpenAPI Specification within the GIT Repository', defaultValue: "openapi-spec.yaml")
+        booleanParam(name: 'ANSIBLE_VERBOSE', description: 'Run Ansible in verbose mode (-v)', defaultValue: true)
+    }
+```
+
+- Click **Save**
+- Click **Build** or **Build with Parameters**
+- Wait for the pipeline to complete
+
+Congratulation, you can now customize the pipeline as will!
