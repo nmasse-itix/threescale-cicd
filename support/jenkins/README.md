@@ -1,3 +1,18 @@
+# \[DEPRECATED\]
+
+Since we received too much negative feedbacks about this Jenkins integration (complex to setup, not stable enough, hard to debug, etc.), we need to accept the truth: it is not suitable for customer use and long term support. 
+
+Hopefully, we came up with a different approach that proved (at least until now) much more stable and easier to setup: the [OpenShift integration](../openshift/).
+
+With the [OpenShift integration](../openshift/), you can still provision an API to 3scale from a Jenkins pipeline but it also brings several advantages :
+
+- Credentials (3scale Access Token, SSO Issuer Endpoint) are managed by OpenShift and thus subject to RBAC (**more secure**)
+- Playbooks logs are stored in OpenShift (**easier to debug**)
+- Environmental parameters (admin portal url, public base URL, etc.) are stored and managed in OpenShift (**easier to manage**)
+- All artefacts are stored in OpenShift: you can use "Configuration-as-Code" principles to define the target state of your infrastructure without any manual setup in Jenkins (**easier to configure**)
+
+Have a try to the [OpenShift integration](../openshift/) and let us know what you think!
+
 # Using this Ansible role from Jenkins
 
 You can use this Ansible role from Jenkins to include 3scale in your Continuous
