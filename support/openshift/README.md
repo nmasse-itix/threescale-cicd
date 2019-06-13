@@ -7,7 +7,7 @@ You can use the provided OpenShift template to create all the mandatory objects:
 - A Secret holding the credentials to access the 3scale Admin Portal
 
 ```sh
-oc create -f openshift-template.yaml
+oc create -f https://raw.githubusercontent.com/nmasse-itix/threescale-cicd/master/support/openshift/openshift-template.yaml
 oc new-app --template=deploy-3scale-api -p THREESCALE_CICD_VERSION=stable -p THREESCALE_ADMIN_PORTAL_ACCESS_TOKEN=1234..5678 -p THREESCALE_ADMIN_PORTAL_HOSTNAME=TENANT-admin.3scale.net -p API_NAME=echo-api -p THREESCALE_CICD_PRIVATE_BASE_URL=https://echo-api.3scale.net -p API_GIT_URI=https://github.com/nmasse-itix/rhte-api.git
 ```
 
