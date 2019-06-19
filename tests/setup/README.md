@@ -17,8 +17,8 @@ oc new-app --template=3scale-gateway --name=apicast-<NAME>-staging -p CONFIGURAT
 oc new-app --template=3scale-gateway --name=apicast-<NAME>-production -p CONFIGURATION_URL_SECRET=3scale-tenant-<NAME> -p CONFIGURATION_CACHE=60 -p RESPONSE_CODES=true -p LOG_LEVEL=info -p CONFIGURATION_LOADER=boot -p APICAST_NAME=apicast-<NAME>-production -p DEPLOYMENT_ENVIRONMENT=production -p IMAGE_NAME=quay.io/3scale/apicast:v3.4.0
 oc scale dc/apicast-<NAME>-staging --replicas=1
 oc scale dc/apicast-<NAME>-production --replicas=1
-oc create route edge apicast-nmasse-redhat-staging --service=apicast-nmasse-redhat-staging --hostname=wildcard.nmasse-redhat-staging.app.itix.fr --insecure-policy=Allow
-oc create route edge apicast-nmasse-redhat-production --service=apicast-nmasse-redhat-production --hostname=wildcard.nmasse-redhat-production.app... --insecure-policy=Allow
+oc create route edge apicast-<NAME>-staging --service=apicast-<NAME>-staging --hostname=wildcard.<NAME>-staging.app.itix.fr --insecure-policy=Allow
+oc create route edge apicast-<NAME>-production --service=apicast-<NAME>-production --hostname=wildcard.<NAME>-production.app... --insecure-policy=Allow
 ```
 
 Provision the Red Hat SSO tenants with the included playbooks:
